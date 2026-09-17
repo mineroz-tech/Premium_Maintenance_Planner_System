@@ -833,6 +833,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       <div class="nav-item" data-page="tyre"><span class="ic">⚫</span><span class="nav-label">Tyre Mgmt</span><span class="nav-badge" id="tyreBadge" style="display:none;"></span></div>
       <div class="nav-item" data-page="service"><span class="ic">🗓️</span><span class="nav-label">Service Forecast</span><span class="nav-badge" id="svcBadge" style="display:none;"></span></div>
       <div class="nav-item" data-page="workorder"><span class="ic">🧾</span><span class="nav-label">Workorder</span><span class="nav-badge" id="woBadge" style="display:none;"></span></div>
+      <div class="nav-item" data-page="fuel"><span class="ic">⛽</span><span class="nav-label">Fuel Management</span><span class="nav-badge" id="fuelBadge" style="display:none;"></span></div>
       <div class="nav-section-label">Sistem</div>
       <div class="nav-item" data-page="reports"><span class="ic">📄</span><span class="nav-label">Laporan</span></div>
       <div class="nav-item" data-page="audit"><span class="ic">🕵️</span><span class="nav-label">Audit Log</span></div>
@@ -970,23 +971,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
             <div style="text-align:left;"><div class="l">Jam Kerja</div><div style="font-size:12.5px;font-weight:700;">Jam Kerja Akhir − Awal</div></div>
           </div>
         </div>
-        <div class="glass card" style="margin-bottom:16px;">
-          <div class="panel-head"><div class="panel-title"><span class="ic">☁️</span>Integrasi Google Spreadsheet (Google Apps Script)</div>
-            <span class="chip" id="gasStatusChip">Belum dikonfigurasi</span>
-          </div>
-          <div class="form-grid">
-            <div class="full"><label>Web App URL (GAS Deployment)</label><input id="gasWebAppUrl" placeholder="https://script.google.com/macros/s/XXXX/exec" oninput="saveGasConfig()"></div>
-          </div>
-          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;align-items:center;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim);">
-              <input type="checkbox" id="gasAutoSync" onchange="saveGasConfig()"> Auto-sync saat keluar aplikasi (beforeunload)
-            </label>
-            <button class="btn btn-ghost btn-sm" onclick="syncDailyToGAS(true)">☁️ Sync Sekarang ke Sheet</button>
-            <button class="btn btn-ghost btn-sm" onclick="showGasScriptDocs()">📄 Lihat Kode Apps Script</button>
-          </div>
-          <div class="banner info" style="margin-top:12px;" id="gasDocsBlock">
-            <b>ℹ️ Cara pakai:</b>&nbsp;Buat Google Sheet baru → Extensions → Apps Script → tempel kode dari tombol "Lihat Kode Apps Script" → Deploy as Web App (akses: Anyone) → salin URL-nya ke kolom di atas. Setiap simpan/edit data harian akan otomatis di-append/update ke sheet tsb, dan sinkronisasi ulang otomatis dicoba saat Anda menutup aplikasi bila auto-sync dicentang.
-          </div>
+        <div class="banner info" style="margin-bottom:16px;">
+          <b>☁️ Sinkronisasi Google Sheet:</b>&nbsp;Data harian ikut tersinkron otomatis lewat pengaturan terpusat di tab <a href="#" onclick="document.querySelector('[data-page=&quot;apiint&quot;]').click();return false;" style="color:var(--steel-2);font-weight:700;">API / IoT → Sinkronisasi ke Google Spreadsheet</a> (satu konfigurasi untuk semua data aplikasi).
         </div>
         <div class="glass card" style="margin-bottom:16px;">
           <div class="panel-head"><div class="panel-title"><span class="ic">🚨</span>Notifikasi Otomatis (PA Drop / MA Rendah / EU Stagnan / Fuel Abnormal)</div></div>
@@ -1286,19 +1272,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         <div class="grid g-4" id="woKpis" style="margin-bottom:16px;"></div>
         <div class="banner" id="woAlertBanner" style="display:none;"></div>
 
-        <div class="glass card" style="margin-bottom:16px;">
-          <div class="panel-head"><div class="panel-title"><span class="ic">☁️</span>Integrasi Google Spreadsheet (Workorder)</div>
-            <span class="chip" id="gasWoStatusChip">Belum dikonfigurasi</span>
-          </div>
-          <div class="form-grid">
-            <div class="full"><label>Web App URL (GAS Deployment) — Sheet Workorder</label><input id="gasWoWebAppUrl" placeholder="https://script.google.com/macros/s/XXXX/exec" oninput="saveGasWoConfig()"></div>
-          </div>
-          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;align-items:center;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim);">
-              <input type="checkbox" id="gasWoAutoSync" onchange="saveGasWoConfig()"> Auto-sync saat keluar aplikasi
-            </label>
-            <button class="btn btn-ghost btn-sm" onclick="syncWorkorderToGAS(true)">☁️ Sync Sekarang ke Sheet</button>
-          </div>
+        <div class="banner info" style="margin-bottom:16px;">
+          <b>☁️ Sinkronisasi Google Sheet:</b>&nbsp;Data workorder ikut tersinkron otomatis lewat pengaturan terpusat di tab <a href="#" onclick="document.querySelector('[data-page=&quot;apiint&quot;]').click();return false;" style="color:var(--steel-2);font-weight:700;">API / IoT → Sinkronisasi ke Google Spreadsheet</a> (satu konfigurasi untuk semua data aplikasi).
         </div>
 
         <div class="grid g-2" style="margin-bottom:16px;">
@@ -1338,6 +1313,142 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
               </tr></thead>
               <tbody id="woTableBody"></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ FUEL MANAGEMENT ============ -->
+      <div class="page" id="page-fuel">
+        <div class="page-head">
+          <div>
+            <div class="page-title">Fuel Management</div>
+            <div class="page-sub">Ledger stock BBM harian per unit & tangki penyimpanan pusat — saling terhubung otomatis</div>
+          </div>
+          <div class="actions" id="fuelActionsUnit">
+            <input type="file" id="fuelImportFile" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importFuelFile(this.files[0])">
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fuelImportFile').click()">⬆️ Import Excel/CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportFuelExcel()">⬇️ Excel</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportFuelPDF()">⬇️ PDF</button>
+            <button class="btn btn-primary btn-sm" onclick="openFuelModal()">＋ Input Fuel Harian</button>
+          </div>
+          <div class="actions" id="fuelActionsStorage" style="display:none;">
+            <button class="btn btn-ghost btn-sm" onclick="exportFuelStorageExcel()">⬇️ Excel</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportFuelStoragePDF()">⬇️ PDF</button>
+            <button class="btn btn-primary btn-sm" onclick="openFuelStorageModal()">＋ Catat Pengiriman BBM</button>
+          </div>
+        </div>
+
+        <div class="tab-strip">
+          <button id="fuelTabUnitBtn" class="active" onclick="switchFuelView('unit')">🚛 Per Unit (Tangki Alat)</button>
+          <button id="fuelTabStorageBtn" onclick="switchFuelView('storage')">🛢️ Storage / Tangki Induk</button>
+        </div>
+
+        <!-- ===== VIEW: PER UNIT ===== -->
+        <div id="fuelViewUnit">
+          <div class="grid g-4" id="fuelKpis" style="margin-bottom:16px;"></div>
+          <div class="banner" id="fuelAlertBanner" style="display:none;"></div>
+
+          <div class="glass card" style="margin-bottom:16px;">
+            <div class="panel-head"><div class="panel-title"><span class="ic">🧮</span>Rumus & Ambang Kritis</div>
+              <div class="chip-row" style="align-items:center;">
+                <span style="font-size:11.5px;color:var(--text-dim);">Ambang Stock Kritis:</span>
+                <input id="fuelMinStock" type="number" value="100" style="width:90px;padding:6px 9px;border-radius:8px;border:1px solid var(--border-strong);background:rgba(255,255,255,.03);color:var(--text);font-size:12px;" onchange="saveFuelConfig()"> Ltr
+              </div>
+            </div>
+            <div class="calc-preview" style="grid-template-columns:1fr;">
+              <div style="text-align:left;"><div class="l">Stock Akhir (Tangki Unit)</div><div style="font-size:13px;font-weight:700;">Stock_Akhir = Stock_Awal + Fuel_In − Fuel_Out</div></div>
+            </div>
+            <div class="banner info" style="margin-top:12px;">
+              <b>🔗 Relasi ke Storage:</b>&nbsp;Setiap <b>Fuel_In</b> yang diisikan ke tangki unit di sini otomatis dianggap sebagai BBM yang keluar (disalurkan) dari <b>Storage/Tangki Induk</b> pada tanggal yang sama — lihat tab "Storage / Tangki Induk" di atas.
+            </div>
+          </div>
+
+          <div class="grid g-2" style="margin-bottom:16px;">
+            <div class="glass card">
+              <div class="panel-head"><div class="panel-title"><span class="ic">📉</span>Tren Konsumsi & Stock BBM</div>
+                <select id="fuelTrendUnit" onchange="renderFuelCharts()"><option value="__fleet__">Seluruh Fleet</option></select>
+              </div>
+              <div class="chart-box"><canvas id="chartFuelTrend"></canvas></div>
+            </div>
+            <div class="glass card">
+              <div class="panel-head"><div class="panel-title"><span class="ic">📊</span>Total Konsumsi (Fuel Out) per Unit</div></div>
+              <div class="chart-box"><canvas id="chartFuelConsumption"></canvas></div>
+            </div>
+          </div>
+
+          <div class="glass card" style="margin-bottom:16px;">
+            <div class="panel-head"><div class="panel-title"><span class="ic">🤖</span>Notifikasi & Insight Otomatis</div></div>
+            <div class="insight-list" id="fuelInsights"></div>
+          </div>
+
+          <div class="glass card">
+            <div class="filters-bar">
+              <input type="date" id="fFuelDate" onchange="renderFuelTable()">
+              <select id="fFuelUnit" onchange="renderFuelTable()"><option value="">Semua Unit</option></select>
+              <input type="text" id="fFuelSearch" placeholder="Cari Operator/Kegiatan..." oninput="renderFuelTable()" style="min-width:180px;">
+              <button class="btn btn-ghost btn-sm" onclick="resetFuelFilters()">Reset</button>
+              <span class="filter-hint" style="margin-left:auto;">Baris merah = Stock Akhir di bawah ambang kritis</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th data-sort="tanggal">Tanggal</th><th data-sort="unitId">Unit</th><th data-sort="stockAwal">Stock Awal</th>
+                  <th data-sort="fuelIn">Fuel In</th><th data-sort="fuelOut">Fuel Out</th><th data-sort="stockAkhir">Stock Akhir</th>
+                  <th data-sort="jamKerja">Jam Kerja (Ref.)</th><th>Kegiatan (Ref.)</th>
+                  <th data-sort="operator">Operator/Driver</th><th>Catatan</th><th>Aksi</th>
+                </tr></thead>
+                <tbody id="fuelTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== VIEW: STORAGE / TANGKI INDUK ===== -->
+        <div id="fuelViewStorage" style="display:none;">
+          <div class="grid g-4" id="fuelStorageKpis" style="margin-bottom:16px;"></div>
+          <div class="banner" id="fuelStorageAlertBanner" style="display:none;"></div>
+
+          <div class="glass card" style="margin-bottom:16px;">
+            <div class="panel-head"><div class="panel-title"><span class="ic">⚙️</span>Konfigurasi Tangki Induk</div></div>
+            <div class="form-grid">
+              <div><label>Stock Awal (Opening Balance, Ltr)</label><input id="fuelStorageOpening" type="number" oninput="saveFuelStorageConfig()"></div>
+              <div><label>Tanggal Opening Balance</label><input id="fuelStorageOpeningDate" type="date" onchange="saveFuelStorageConfig()"></div>
+              <div><label>Kapasitas Tangki (Ltr, opsional)</label><input id="fuelStorageCapacity" type="number" oninput="saveFuelStorageConfig()"></div>
+              <div><label>Ambang Stock Kritis (Ltr)</label><input id="fuelStorageMinStock" type="number" oninput="saveFuelStorageConfig()"></div>
+            </div>
+            <div class="banner info" style="margin-top:12px;">
+              <b>ℹ️ Cara kerja ledger:</b>&nbsp;Stock tangki dihitung otomatis harian: <code class="inline">Stock Akhir = Stock Awal + Pengiriman (Fuel In) − Disalurkan ke Unit (Fuel Out, auto dari total Fuel In seluruh unit pada tanggal tsb)</code>. Anda hanya perlu mencatat <b>pengiriman BBM masuk</b> lewat tombol "＋ Catat Pengiriman BBM" — sisanya dihitung sendiri oleh sistem berdasarkan data di tab "Per Unit".
+            </div>
+          </div>
+
+          <div class="glass card" style="margin-bottom:16px;">
+            <div class="panel-head"><div class="panel-title"><span class="ic">📉</span>Tren Stock Tangki Induk</div></div>
+            <div class="chart-box"><canvas id="chartFuelStorageTrend"></canvas></div>
+          </div>
+
+          <div class="glass card" style="margin-bottom:16px;">
+            <div class="panel-head"><div class="panel-title"><span class="ic">🤖</span>Insight & Notifikasi Storage</div></div>
+            <div class="insight-list" id="fuelStorageInsights"></div>
+          </div>
+
+          <div class="glass card" style="margin-bottom:16px;">
+            <div class="panel-head"><div class="panel-title"><span class="ic">🚚</span>Riwayat Pengiriman BBM (Fuel In Manual)</div></div>
+            <div class="table-wrap short">
+              <table>
+                <thead><tr><th>Tanggal</th><th>Jumlah (Ltr)</th><th>Supplier/Vendor</th><th>No. Surat Jalan/DO</th><th>Catatan</th><th>Aksi</th></tr></thead>
+                <tbody id="fuelStorageDeliveryBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="glass card">
+            <div class="panel-head"><div class="panel-title"><span class="ic">📒</span>Ledger Harian Tangki Induk (Otomatis)</div></div>
+            <div class="table-wrap short">
+              <table>
+                <thead><tr><th>Tanggal</th><th>Stock Awal</th><th>Fuel In (Pengiriman)</th><th>Fuel Out (ke Unit)</th><th>Stock Akhir</th></tr></thead>
+                <tbody id="fuelStorageLedgerBody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -1422,16 +1533,25 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           </div>
         </div>
         <div class="glass card" style="margin-top:16px;">
-          <div class="panel-head"><div class="panel-title"><span class="ic">🔄</span>Mode Offline & Auto-Sync</div></div>
-          <div class="form-grid">
-            <div class="full"><label>Webhook / Endpoint Sync (opsional)</label><input id="syncEndpoint" placeholder="https://server-anda.com/api/mps/sync"></div>
+          <div class="panel-head"><div class="panel-title"><span class="ic">☁️</span>Sinkronisasi ke Google Spreadsheet (Semua Data)</div>
+            <span class="chip" id="gasStatusChip">Belum dikonfigurasi</span>
+          </div>
+          <div class="banner info">
+            <b>💡 Satu konfigurasi untuk semua modul:</b>&nbsp;Populasi Unit, Input Data Harian, Tyre Management, Service Config, Workorder, Fuel Management, dan Fuel Storage — semuanya dikirim ke Google Sheet yang sama (tiap modul jadi tab/sheet sendiri) lewat satu Web App URL di bawah ini.
+          </div>
+          <div class="form-grid" style="margin-top:12px;">
+            <div class="full"><label>Web App URL (GAS Deployment)</label><input id="gasWebAppUrl" placeholder="https://script.google.com/macros/s/XXXX/exec" oninput="saveGasConfig()"></div>
           </div>
           <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap;">
-            <button class="btn btn-ghost btn-sm" onclick="attemptSync()">🔄 Sync Sekarang</button>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim);">
+              <input type="checkbox" id="gasAutoSync" onchange="saveGasConfig()"> Auto-sync semua data saat keluar aplikasi (beforeunload)
+            </label>
+            <button class="btn btn-primary btn-sm" onclick="syncAllToGAS(true)">☁️ Sync Semua Sekarang</button>
+            <button class="btn btn-ghost btn-sm" onclick="showGasScriptDocs()">📄 Lihat Kode Apps Script</button>
             <span style="font-size:11.5px;color:var(--text-dim);" id="syncQueueInfo">Antrian sync: 0 perubahan</span>
           </div>
-          <div class="banner" style="margin-top:12px;">
-            <b>Catatan:</b>&nbsp;Semua data selalu tersimpan aman di localStorage terlebih dahulu (offline-safe). Jika endpoint sync diisi & perangkat online, perubahan akan dikirim; jika gagal/offline, perubahan tetap diantre dan dicoba lagi otomatis.
+          <div class="banner" style="margin-top:12px;" id="gasDocsBlock">
+            <b>ℹ️ Cara pakai:</b>&nbsp;Buat Google Sheet baru → Extensions → Apps Script → tempel kode dari tombol "Lihat Kode Apps Script" → Deploy as Web App (akses: Anyone) → salin URL-nya ke kolom di atas. Semua data (Populasi Unit, Data Harian, Tyre, Service Config, Workorder, Fuel Management, Fuel Storage) akan otomatis dikirim ke sheet masing-masing setiap kali Anda klik "Sync Semua Sekarang" atau saat menutup aplikasi bila auto-sync dicentang. Data tetap tersimpan aman di localStorage browser terlebih dahulu, terlepas dari status sync.
           </div>
         </div>
       </div>
@@ -1460,6 +1580,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           <a href="#g-tyre">⚫ Tyre Management</a>
           <a href="#g-service">🗓️ Service Forecast</a>
           <a href="#g-workorder">🧾 Workorder</a>
+          <a href="#g-fuel">⛽ Fuel Management</a>
           <a href="#g-reports">📄 Laporan</a>
           <a href="#g-audit">🕵️ Audit Log</a>
           <a href="#g-api">🔌 API / IoT</a>
@@ -1486,7 +1607,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
               <li><b>Kolom pencarian (topbar)</b> — ketik ID unit, model, atau Tyre ID untuk lompat langsung ke halaman & filter yang relevan.</li>
               <li><b>🎙️ Voice Command</b> — klik ikon mic di topbar lalu ucapkan nama halaman (mis. "dashboard", "populasi unit", "tambah unit", "input harian"). Butuh browser dengan dukungan Web Speech API (Chrome/Edge) dan izin mikrofon.</li>
               <li><b>🔔 Notifikasi</b> — pintasan menuju Audit Log.</li>
-              <li><b>Status "Tersimpan Lokal" / "Online — Siap Sync"</b> di topbar menunjukkan status penyimpanan data (lihat <a href="#g-api">API/IoT → Mode Offline & Auto-Sync</a>).</li>
+              <li><b>Status "Tersimpan Lokal" / "Online — Siap Sync"</b> di topbar menunjukkan status penyimpanan data (lihat <a href="#g-api">API/IoT → Sinkronisasi ke Google Spreadsheet</a>).</li>
               <li><b>🤖 Chatbot (pojok kanan bawah)</b> — tanya cepat seputar performa unit, rekomendasi service, kategori breakdown terbesar, status ban, atau MTBF/MTTR. Jawaban dihitung langsung dari data yang tersimpan di aplikasi.</li>
             </ul>
           </div>
@@ -1516,7 +1637,7 @@ Jumlah KM = KM Akhir − KM Awal
 Jam Kerja = Jam Kerja Akhir − Jam Kerja Awal</div>
             <div class="guide-step"><div class="num">4</div><div class="txt">Nilai W, S, Jumlah KM, Jam Kerja, dan preview PA/MA muncul otomatis di kotak kalkulasi sebelum disimpan. Jika W+R melebihi 24 jam atau konsumsi fuel menyimpang jauh dari rata-rata fleet, muncul peringatan — periksa kembali input Anda.</div></div>
             <div class="guide-step"><div class="num">5</div><div class="txt">Tabel harian bisa difilter per tanggal/unit/kategori/operator. Baris bertanda ⚠ menandakan kemungkinan data ganda/anomali. Panel <b>Notifikasi Otomatis</b> di atas tabel menyoroti unit dengan PA drop, MA rendah, EU stagnan, atau konsumsi fuel abnormal.</div></div>
-            <div class="guide-step"><div class="num">6</div><div class="txt">Gunakan <b>⬆️ Import Excel/CSV</b> untuk mengunggah data harian secara massal, atau <b>⬇️ Excel/PDF</b> untuk mengunduh. Panel <b>Integrasi Google Spreadsheet</b> memungkinkan sinkronisasi otomatis ke Google Sheet lewat Google Apps Script — lihat kode skrip lewat tombol "Lihat Kode Apps Script".</div></div>
+            <div class="guide-step"><div class="num">6</div><div class="txt">Gunakan <b>⬆️ Import Excel/CSV</b> untuk mengunggah data harian secara massal, atau <b>⬇️ Excel/PDF</b> untuk mengunduh. Sinkronisasi ke Google Sheet diatur terpusat di tab <b>API/IoT</b> (satu konfigurasi untuk semua modul).</div></div>
           </div>
         </details>
 
@@ -1592,6 +1713,20 @@ MTTR = Total Waktu Perbaikan ÷ Jumlah Failure</div>
           </div>
         </details>
 
+        <details class="guide-acc" id="g-fuel">
+          <summary><span><span class="gi">⛽</span>Fuel Management</span><span class="arrow">▾</span></summary>
+          <div class="guide-body">
+            <div class="guide-step"><div class="num">1</div><div class="txt">Klik <b>＋ Input Fuel Harian</b>, pilih Unit dan Tanggal. <b>Stock Awal</b> otomatis terisi dari Stock Akhir hari sebelumnya untuk unit yang sama (ledger berjalan) — bisa ditimpa manual jika ada stock opname aktual.</div></div>
+            <div class="guide-step"><div class="num">2</div><div class="txt"><b>Relasi ke Input Harian:</b> jika ada data Input Harian untuk unit & tanggal yang sama, aplikasi menampilkan referensi Jam Kerja, Kegiatan, dan Fuel tercatat — klik <b>"Gunakan nilai ini"</b> untuk mengisi Fuel Out otomatis dari sana.</div></div>
+            <div class="guide-formula">Stock Akhir = Stock Awal + Fuel In − Fuel Out</div>
+            <div class="guide-step"><div class="num">3</div><div class="txt">Atur <b>Ambang Stock Kritis</b> (default 100 Ltr) di bagian atas halaman — unit dengan Stock Akhir di bawah ambang ini akan disorot merah di tabel, memicu notifikasi, dan muncul di badge sidebar.</div></div>
+            <div class="guide-step"><div class="num">4</div><div class="txt">Panel Insight juga menandai jika Fuel Out yang dicatat di sini berbeda jauh dari Fuel yang tercatat di Input Harian untuk unit & tanggal yang sama — berguna untuk cross-check konsistensi data antar operator.</div></div>
+            <div class="guide-step"><div class="num">5</div><div class="txt">Gunakan Import Excel/CSV untuk input massal, atau Export Excel/PDF untuk laporan. Sinkron ke Google Sheet mengikuti konfigurasi terpusat di tab API/IoT.</div></div>
+            <div class="guide-step"><div class="num">6</div><div class="txt"><b>Tab "Storage / Tangki Induk":</b> untuk mencatat BBM yang masuk ke tangki penyimpanan pusat (dari supplier/mobil tangki). Klik <b>＋ Catat Pengiriman BBM</b>, isi jumlah, supplier, dan no. surat jalan/DO. <b>Fuel Out tangki induk dihitung otomatis</b> = total Fuel In yang Anda catat di seluruh unit pada tanggal yang sama (di tab "Per Unit") — karena BBM ke unit pasti berasal dari tangki induk ini.</div></div>
+            <div class="guide-step"><div class="num">7</div><div class="txt">Atur <b>Stock Awal (Opening Balance)</b> dan tanggalnya sekali di awal pemakaian (sesuai stock fisik tangki saat itu), plus <b>Kapasitas Tangki</b> dan <b>Ambang Kritis</b> — sistem akan menghitung ledger harian otomatis dan memperingatkan jika stock tangki menipis atau diperkirakan habis dalam berapa hari ke depan.</div></div>
+          </div>
+        </details>
+
         <details class="guide-acc" id="g-reports">
           <summary><span><span class="gi">📄</span>Laporan & Ringkasan</span><span class="arrow">▾</span></summary>
           <div class="guide-body">
@@ -1615,7 +1750,7 @@ MTTR = Total Waktu Perbaikan ÷ Jumlah Failure</div>
             <ul>
               <li><code class="inline">window.MPS_API</code> adalah objek JavaScript yang bisa dipanggil dari console browser atau skrip jembatan untuk integrasi sensor IoT/PLC alat berat. Dokumentasi lengkap fungsinya tampil langsung di halaman ini.</li>
               <li>Gunakan panel <b>Simulasi Sensor IoT Masuk</b> untuk mencoba mengirim pembacaan sensor (HM, fuel, engine temp, tyre pressure) tanpa perangkat fisik.</li>
-              <li><b>Mode Offline & Auto-Sync</b>: seluruh data selalu aman tersimpan lokal terlebih dahulu. Isi kolom Webhook jika Anda punya server sendiri untuk menerima data — klik <b>Sync Sekarang</b> untuk mengirim; jika gagal/offline, perubahan tetap diantre.</li>
+              <li><b>Sinkronisasi ke Google Spreadsheet</b>: satu konfigurasi (Web App URL Google Apps Script) untuk seluruh data — Populasi Unit, Data Harian, Tyre, Service Config, dan Workorder — masing-masing otomatis jadi sheet terpisah. Klik <b>Sync Semua Sekarang</b> untuk mengirim manual, atau centang auto-sync agar terkirim otomatis saat menutup aplikasi. Data tetap tersimpan aman di localStorage terlebih dahulu apa pun status sync-nya.</li>
             </ul>
           </div>
         </details>
@@ -1837,6 +1972,53 @@ MTTR = Total Waktu Perbaikan ÷ Jumlah Failure</div>
   </div>
 </div>
 
+<div class="modal-overlay" id="modalFuel">
+  <div class="glass modal">
+    <div class="modal-head"><div class="modal-title" id="fuelModalTitle">Input Fuel Harian</div><button class="modal-close" onclick="closeModal('modalFuel')">✕</button></div>
+    <input type="hidden" id="fuelEditId">
+    <div class="form-grid">
+      <div><label>Tanggal</label><input id="fuelTanggal" type="date" onchange="onFuelFormChange()"></div>
+      <div><label>Unit ID</label><select id="fuelUnitId" onchange="onFuelFormChange()"></select></div>
+      <div><label>Stock Awal (Ltr)</label><input id="fuelStockAwal" type="number" step="0.1" oninput="updateFuelCalc()"></div>
+      <div><label>Fuel In / Pengisian (Ltr)</label><input id="fuelIn" type="number" step="0.1" value="0" oninput="updateFuelCalc()"></div>
+      <div><label>Fuel Out / Konsumsi (Ltr)</label><input id="fuelOut" type="number" step="0.1" value="0" oninput="updateFuelCalc()"></div>
+      <div><label>Operator/Driver</label><input id="fuelOperator" placeholder="mis. Budi Santoso"></div>
+      <div class="full"><label>Kegiatan</label><input id="fuelKegiatan" placeholder="mis. Hauling OB Pit A → Disposal"></div>
+      <div class="full"><label>Catatan</label><input id="fuelCatatan" placeholder="Catatan tambahan (opsional)"></div>
+    </div>
+    <div class="banner info" id="fuelDailyRefBanner" style="margin-top:12px;"></div>
+    <div class="calc-preview" style="grid-template-columns:repeat(3,1fr);">
+      <div><div class="v" id="fuelPrevAwal">0.0</div><div class="l">Stock Awal</div></div>
+      <div><div class="v" id="fuelPrevNet">0.0</div><div class="l">Fuel In − Out</div></div>
+      <div><div class="v" id="fuelPrevAkhir" style="color:var(--amber);">0.0</div><div class="l">Stock Akhir</div></div>
+    </div>
+    <div class="banner" id="fuelCriticalBanner" style="display:none;margin-top:12px;"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modalFuel')">Batal</button>
+      <button class="btn btn-primary" onclick="saveFuel()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalFuelStorage">
+  <div class="glass modal">
+    <div class="modal-head"><div class="modal-title" id="fuelStorageModalTitle">Catat Pengiriman BBM ke Tangki Induk</div><button class="modal-close" onclick="closeModal('modalFuelStorage')">✕</button></div>
+    <input type="hidden" id="fsEditId">
+    <div class="form-grid">
+      <div><label>Tanggal Pengiriman</label><input id="fsTanggal" type="date"></div>
+      <div><label>Jumlah Fuel In (Ltr)</label><input id="fsFuelIn" type="number" step="0.1"></div>
+      <div><label>Supplier / Vendor</label><input id="fsSupplier" placeholder="mis. PT Pertamina Patra Niaga"></div>
+      <div><label>No. Surat Jalan / DO</label><input id="fsNoSurat" placeholder="mis. SJ-2026-00123"></div>
+      <div class="full"><label>Catatan</label><input id="fsCatatan" placeholder="Catatan tambahan (opsional)"></div>
+    </div>
+    <div class="banner info" style="margin-top:12px;" id="fsPreviewBanner"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modalFuelStorage')">Batal</button>
+      <button class="btn btn-primary" onclick="saveFuelStorage()">💾 Simpan Pengiriman</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ CHATBOT ============ -->
 <button id="chatFab" onclick="toggleChat()">🤖</button>
 <div class="glass" id="chatPanel">
@@ -1977,10 +2159,13 @@ let state = {
   tyreLogs: [],
   serviceConfig: [], // {component, interval, lifeStd, cost}
   workorders: [], // {id, tanggal, unitId, driver, statusUnit, keterangan, partName, category, tglKejadian, tglFPB, tglPO, tglKirim, tglTerima, tglMulai, tglSelesai}
+  fuelLogs: [], // {id, tanggal, unitId, stockAwal, fuelIn, fuelOut, stockAkhir, operator, kegiatan, catatan}
+  fuelConfig: { minStock: 100 }, // ambang stock kritis per-unit (Ltr)
+  fuelStorageLogs: [], // {id, tanggal, fuelIn, supplier, noSurat, catatan} — pengiriman BBM ke tangki induk
+  fuelStorageConfig: { openingStock: 5000, openingDate: '', capacity: 20000, minStock: 3000 },
   auditLog: [],
   iotLog: [],
-  gasConfig: { url:'', autoSync:false }, // Google Apps Script integration (Input Harian)
-  gasConfigWO: { url:'', autoSync:false }, // Google Apps Script integration (Workorder)
+  gasConfig: { url:'', autoSync:false }, // Google Apps Script integration — satu konfigurasi untuk semua modul
   syncQueue: 0,
 };
 
@@ -2112,6 +2297,62 @@ function seedData(){
     }
   });
   state.dailyLogs = dailyLogs;
+
+  // ---- Fuel Management: ledger stock BBM per unit, Fuel_Out mengikuti fuelLtr dari Input Harian (relasi jam kerja & kegiatan) ----
+  const fuelLogs = [];
+  const TANK_CAPACITY_DEFAULT = 400; // Ltr, asumsi kapasitas tangki unit berat untuk data sampel
+  units.forEach((u)=>{
+    const uLogs = dailyLogs.filter(l=>l.unitId===u.id).sort((a,b)=>a.tanggal.localeCompare(b.tanggal));
+    if(!uLogs.length) return;
+    let stock = TANK_CAPACITY_DEFAULT * (0.5 + Math.random()*0.3); // stock awal random 50-80% kapasitas
+    uLogs.forEach((l, idx)=>{
+      const fuelOut = l.fuelLtr || 0;
+      let fuelIn = 0;
+      // refuel ketika stock akan menipis (<35% kapasitas) atau setiap ~4 hari sekali secara acak
+      if(stock - fuelOut < TANK_CAPACITY_DEFAULT*0.35 || (idx>0 && idx % 4 === 0 && Math.random()<0.6)){
+        fuelIn = +(TANK_CAPACITY_DEFAULT - stock + fuelOut + Math.random()*20).toFixed(1);
+        fuelIn = Math.max(fuelIn, 50);
+      }
+      const stockAwal = +stock.toFixed(1);
+      stock = stock + fuelIn - fuelOut;
+      if(stock < 0) stock = Math.random()*20; // guard data sampel agar tidak minus ekstrem
+      fuelLogs.push({
+        id: uid('fl'), tanggal: l.tanggal, unitId: u.id,
+        stockAwal, fuelIn: +fuelIn.toFixed(1), fuelOut: +fuelOut.toFixed(1), stockAkhir: +stock.toFixed(1),
+        operator: l.operator || '', kegiatan: l.kegiatan || '', catatan: fuelIn>0 ? 'Pengisian BBM rutin' : ''
+      });
+    });
+  });
+  state.fuelLogs = fuelLogs;
+  state.fuelConfig = { minStock: 100 };
+
+  // ---- Fuel Storage (Tangki Induk): opening balance + pengiriman berkala, Fuel_Out otomatis dari total Fuel_In seluruh unit ----
+  const openingDate = daysAgoStr(61);
+  const totalUnitFuelInAllTime = fuelLogs.reduce((s,f)=>s+f.fuelIn,0);
+  const openingStock = 8000;
+  state.fuelStorageConfig = { openingStock, openingDate, capacity: 20000, minStock: 3000 };
+  const fuelStorageLogs = [];
+  // pengiriman berkala tiap ~5-6 hari (ukuran tanki tangki BBM realistis untuk site tambang)
+  let cursorDate = 58;
+  while(cursorDate >= 0){
+    const amount = 9000 + Math.floor(Math.random()*3000);
+    fuelStorageLogs.push({
+      id: uid('fs'), tanggal: daysAgoStr(cursorDate), fuelIn: amount,
+      supplier: ['PT Pertamina Patra Niaga','PT AKR Corporindo','PT Elnusa Petrofin'][fuelStorageLogs.length%3],
+      noSurat: 'SJ-' + (2026000 + fuelStorageLogs.length),
+      catatan: 'Pengiriman rutin mobil tangki'
+    });
+    cursorDate -= 5 + Math.floor(Math.random()*2);
+  }
+  // pastikan total pengiriman + opening cukup menutupi total dispensed — sebar kekurangannya merata ke semua
+  // pengiriman (bukan ditumpuk di satu baris) agar tiap nilai pengiriman tetap realistis untuk ukuran mobil tangki.
+  const deliveryTotal = fuelStorageLogs.reduce((s,f)=>s+f.fuelIn,0);
+  if(openingStock + deliveryTotal < totalUnitFuelInAllTime){
+    const shortfall = (totalUnitFuelInAllTime - (openingStock + deliveryTotal)) + 3000; // + buffer stock akhir positif
+    const perDelivery = Math.ceil(shortfall / fuelStorageLogs.length);
+    fuelStorageLogs.forEach(f=>{ f.fuelIn += perDelivery; });
+  }
+  state.fuelStorageLogs = fuelStorageLogs;
 
   // ---- Tyre_Position: auto-generated per unit's wheelConfig (4R/6R/10R/12R), jumlah posisi otomatis ----
   const tyres = []; const tyreLogs = [];
@@ -2259,7 +2500,7 @@ function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('c
 function toggleSidebarMobile(){ document.getElementById('sidebar').classList.toggle('mobile-open'); }
 
 function updateSyncUI(){
-  const endpoint = document.getElementById('syncEndpoint') ? document.getElementById('syncEndpoint').value : '';
+  const endpoint = state.gasConfig?.url || '';
   const pill = document.getElementById('syncPill');
   const txt = document.getElementById('syncText');
   if(navigator.onLine && endpoint){ pill.classList.remove('offline'); txt.textContent='Online — Siap Sync'; }
@@ -2269,16 +2510,6 @@ function updateSyncUI(){
 }
 window.addEventListener('online', updateSyncUI);
 window.addEventListener('offline', updateSyncUI);
-
-function attemptSync(){
-  const endpoint = document.getElementById('syncEndpoint').value.trim();
-  if(!endpoint){ toast('Isi dulu URL endpoint sync (opsional) untuk mencoba sinkronisasi.', 'warn'); return; }
-  if(!navigator.onLine){ toast('Perangkat offline — perubahan tetap diantre & akan disinkronkan otomatis saat online.', 'warn'); return; }
-  toast('Mengirim ' + state.syncQueue + ' perubahan ke endpoint...', 'info');
-  fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({units:state.units, dailyLogs:state.dailyLogs, tyres:state.tyres}) })
-    .then(()=>{ state.syncQueue = 0; updateSyncUI(); toast('Sinkronisasi berhasil.', 'ok'); })
-    .catch(()=>{ toast('Sinkronisasi gagal (endpoint tidak dapat dijangkau) — perubahan tetap tersimpan lokal & diantre.', 'err'); });
-}
 
 function globalSearchHandler(q){
   q = q.trim();
@@ -2423,12 +2654,14 @@ function saveUnit(){
   }
   if(wheelConfig && wheelConfig!=='NONE'){ ensureTyrePositionsForUnit(unitRef); }
   saveState(); closeModal('modalUnit'); populateUnitFilterOptions(); renderUnitsTable(); refreshUnitDropdowns();
+  maybeAutoSyncGAS();
 }
 function deleteUnit(id){
   if(!confirm(`Hapus unit ${id}? Data harian & ban terkait unit ini tidak akan otomatis terhapus.`)) return;
   state.units = state.units.filter(u=>u.id!==id);
   logAudit('DELETE_UNIT', `Unit ${id} dihapus`);
   saveState(); renderUnitsTable(); refreshUnitDropdowns();
+  maybeAutoSyncGAS();
   toast('Unit dihapus.', 'warn');
 }
 function refreshUnitDropdowns(){
@@ -2612,13 +2845,14 @@ function saveDaily(){
   }
   const u = state.units.find(x=>x.id===unitId); if(u && hmAkhir>u.lastHm) u.lastHm = hmAkhir;
   saveState(); closeModal('modalDaily'); renderDailyTable(); renderAll();
-  syncDailyToGAS(false, record);
+  maybeAutoSyncGAS();
 }
 function deleteDaily(id){
   if(!confirm('Hapus data harian ini?')) return;
   state.dailyLogs = state.dailyLogs.filter(x=>x.id!==id);
   logAudit('DELETE_DAILY', `Data harian dihapus (id:${id})`);
   saveState(); renderDailyTable(); renderAll();
+  maybeAutoSyncGAS();
   toast('Data dihapus.', 'warn');
 }
 function openQuickInput(){ document.querySelector('[data-page="input"]').click(); openDailyModal(); }
@@ -2733,9 +2967,10 @@ function exportDailyPDF(){
   toast('PDF Input Harian diunduh.', 'ok');
 }
 
-/* ---- Integrasi Google Spreadsheet via Google Apps Script (GAS) ---- */
+/* ---- Sinkronisasi ke Google Spreadsheet via Google Apps Script (GAS) — SATU KONFIGURASI UNTUK SEMUA MODUL ---- */
 function loadGasConfig(){
-  document.getElementById('gasWebAppUrl').value = state.gasConfig?.url || '';
+  const urlEl = document.getElementById('gasWebAppUrl'); if(!urlEl) return;
+  urlEl.value = state.gasConfig?.url || '';
   document.getElementById('gasAutoSync').checked = !!state.gasConfig?.autoSync;
   updateGasStatusChip();
 }
@@ -2748,36 +2983,90 @@ function updateGasStatusChip(){
   if(state.gasConfig?.url){ chip.textContent = 'Terkonfigurasi' + (state.gasConfig.autoSync?' · Auto-sync ON':''); chip.classList.add('on'); }
   else { chip.textContent = 'Belum dikonfigurasi'; chip.classList.remove('on'); }
 }
-function syncDailyToGAS(manual, singleRecord){
+function buildFullSyncPayload(){
+  return {
+    mode: 'bulk_all',
+    units: state.units,
+    dailyLogs: state.dailyLogs,
+    tyres: state.tyres,
+    tyreLogs: state.tyreLogs,
+    serviceConfig: state.serviceConfig,
+    workorders: state.workorders,
+    fuelLogs: state.fuelLogs,
+    fuelStorageLogs: state.fuelStorageLogs,
+  };
+}
+function syncAllToGAS(manual){
   const url = state.gasConfig?.url;
-  if(!url){ if(manual) toast('Isi dulu Web App URL Google Apps Script.', 'warn'); return; }
-  const payload = singleRecord ? { mode:'upsert', rows:[singleRecord] } : { mode:'bulk', rows: state.dailyLogs };
-  if(manual) toast('Mengirim data ke Google Sheet...', 'info');
-  fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(payload) })
-    .then(()=>{ if(manual) toast('Permintaan sync terkirim ke Google Apps Script.', 'ok'); logAudit('GAS_SYNC', `Sync ${payload.rows.length} baris data harian ke Google Sheet`); saveState(); })
-    .catch(()=>{ if(manual) toast('Sync gagal — periksa URL Web App atau koneksi internet.', 'err'); });
+  if(!url){ if(manual) toast('Isi dulu Web App URL Google Apps Script di panel Sinkronisasi.', 'warn'); return; }
+  if(typeof fetch !== 'function'){ if(manual) toast('Browser ini tidak mendukung fitur sync (fetch API tidak tersedia).', 'err'); return; }
+  const payload = buildFullSyncPayload();
+  if(manual) toast('Mengirim seluruh data (Unit, Harian, Tyre, Service, Workorder) ke Google Sheet...', 'info');
+  try{
+    fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(payload) })
+      .then(()=>{
+        state.syncQueue = 0; updateSyncUI();
+        if(manual) toast('Permintaan sync semua data terkirim ke Google Apps Script.', 'ok');
+        logAudit('GAS_SYNC_ALL', `Sync semua data ke Google Sheet (${payload.units.length} unit, ${payload.dailyLogs.length} data harian, ${payload.tyres.length} slot ban, ${payload.workorders.length} workorder, ${payload.fuelLogs.length} data fuel)`);
+        saveState();
+      })
+      .catch(()=>{ if(manual) toast('Sync gagal — periksa URL Web App atau koneksi internet.', 'err'); });
+  }catch(e){ if(manual) toast('Sync gagal — periksa URL Web App atau koneksi internet.', 'err'); }
+}
+// Dipanggil best-effort (silent) setelah tiap simpan/hapus di modul manapun, jika auto-sync aktif
+function maybeAutoSyncGAS(){
+  if(state.gasConfig?.url && state.gasConfig?.autoSync){ syncAllToGAS(false); }
 }
 window.addEventListener('beforeunload', ()=>{
   if(state.gasConfig?.url && state.gasConfig?.autoSync){
-    try{ navigator.sendBeacon(state.gasConfig.url, JSON.stringify({mode:'bulk', rows: state.dailyLogs})); }catch(e){}
+    try{ navigator.sendBeacon(state.gasConfig.url, JSON.stringify(buildFullSyncPayload())); }catch(e){}
   }
 });
 function showGasScriptDocs(){
   const block = document.getElementById('gasDocsBlock');
-  block.innerHTML = `<b>📄 Kode Google Apps Script (tempel di script.google.com untuk Sheet Anda):</b>
+  block.innerHTML = `<b>📄 Kode Google Apps Script (tempel di script.google.com untuk Sheet Anda — menangani SEMUA modul sekaligus):</b>
   <div class="api-block" style="margin-top:8px;">function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('DataHarian')
-              || SpreadsheetApp.getActiveSpreadsheet().insertSheet('DataHarian');
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
   var body = JSON.parse(e.postData.contents);
-  var rows = body.rows || [];
-  rows.forEach(function(r){
-    sheet.appendRow([r.tanggal, r.unitId, r.hmAwal, r.hmAkhir, r.kmAwal, r.kmAkhir,
-      r.jumlahKm, r.jamKerjaAwal, r.jamKerjaAkhir, r.jamKerja, r.w, r.s, r.r,
-      r.kategori, r.operator, r.fuelLtr, r.kegiatan]);
-  });
+
+  function upsertSheet(name, header, rows, mapRow) {
+    var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
+    if (sheet.getLastRow() === 0) sheet.appendRow(header);
+    sheet.getRange(2, 1, Math.max(sheet.getMaxRows()-1,1), header.length).clearContent();
+    rows.forEach(function(r){ sheet.appendRow(mapRow(r)); });
+  }
+
+  if (body.units) upsertSheet('Populasi_Unit',
+    ['Unit_ID','Type','Model','Merk','Tahun','Lokasi','Wheel_Config','Last_HM'],
+    body.units, function(u){ return [u.id,u.type,u.model,u.merk,u.tahun,u.lokasi,u.wheelConfig,u.lastHm]; });
+
+  if (body.dailyLogs) upsertSheet('Data_Harian',
+    ['Tanggal','Unit_ID','HM_Awal','HM_Akhir','KM_Awal','KM_Akhir','Jumlah_KM','Jam_Kerja_Awal','Jam_Kerja_Akhir','Jam_Kerja','W','S','R','Kategori_BD','Operator','Fuel_Ltr','Kegiatan'],
+    body.dailyLogs, function(r){ return [r.tanggal,r.unitId,r.hmAwal,r.hmAkhir,r.kmAwal,r.kmAkhir,r.jumlahKm,r.jamKerjaAwal,r.jamKerjaAkhir,r.jamKerja,r.w,r.s,r.r,r.kategori,r.operator,r.fuelLtr,r.kegiatan]; });
+
+  if (body.tyres) upsertSheet('Tyre_Position',
+    ['Unit_ID','Axle_No','Side','Position','Tyre_ID','Brand','Model','Size','Date_Installed','Lifetime_Hours','Jam_Terpakai'],
+    body.tyres, function(t){ return [t.unitId,t.axleNo,t.side,t.position,t.tyreId,t.brand,t.model,t.size,t.dateInstalled,t.lifeStd,t.hmSince]; });
+
+  if (body.serviceConfig) upsertSheet('Service_Config',
+    ['Komponen','Interval_Jam','Standar_Life','Estimasi_Biaya'],
+    body.serviceConfig, function(s){ return [s.component,s.interval,s.lifeStd,s.cost]; });
+
+  if (body.workorders) upsertSheet('Workorder',
+    ['Unit_ID','Driver','Status_Unit','Nama_Part','Kategori','Tgl_Kejadian','Tgl_FPB','Tgl_PO','Tgl_Kirim','Tgl_Terima','Tgl_Mulai','Tgl_Selesai'],
+    body.workorders, function(w){ return [w.unitId,w.driver,w.statusUnit,w.partName,w.category,w.tglKejadian,w.tglFPB,w.tglPO,w.tglKirim,w.tglTerima,w.tglMulai,w.tglSelesai]; });
+
+  if (body.fuelLogs) upsertSheet('Fuel_Management',
+    ['Tanggal','Unit_ID','Stock_Awal','Fuel_In','Fuel_Out','Stock_Akhir','Operator','Kegiatan','Catatan'],
+    body.fuelLogs, function(f){ return [f.tanggal,f.unitId,f.stockAwal,f.fuelIn,f.fuelOut,f.stockAkhir,f.operator,f.kegiatan,f.catatan]; });
+
+  if (body.fuelStorageLogs) upsertSheet('Fuel_Storage',
+    ['Tanggal','Fuel_In','Supplier','No_Surat_Jalan','Catatan'],
+    body.fuelStorageLogs, function(f){ return [f.tanggal,f.fuelIn,f.supplier,f.noSurat,f.catatan]; });
+
   return ContentService.createTextOutput('OK');
 }</div>
-  Deploy: Deploy → New deployment → Web app → Execute as "Me" → Who has access "Anyone" → Deploy, lalu salin URL ke kolom Web App URL di atas.`;
+  Deploy: Deploy → New deployment → Web app → Execute as "Me" → Who has access "Anyone" → Deploy, lalu salin URL ke kolom Web App URL di atas. Sheet <b>Populasi_Unit</b>, <b>Data_Harian</b>, <b>Tyre_Position</b>, <b>Service_Config</b>, <b>Workorder</b>, <b>Fuel_Management</b>, dan <b>Fuel_Storage</b> akan dibuat otomatis di spreadsheet yang sama.`;
 }
 
 /* ================= PERFORMANCE ================= */
@@ -3259,6 +3548,7 @@ function saveTyre(){
     toast('Ban baru berhasil ditambahkan.', 'ok');
   }
   saveState(); closeModal('modalTyre'); renderTyre();
+  maybeAutoSyncGAS();
 }
 function deleteTyre(id){
   if(!confirm('Hapus data ban di posisi ini? Slot posisi akan tetap ada (kosong) sesuai konfigurasi unit.')) return;
@@ -3266,6 +3556,7 @@ function deleteTyre(id){
   if(t){ t.tyreId=''; t.brand=''; t.model=''; t.dateInstalled=''; t.hmInstalled=0; t.hmSince=0; t.statusOverride=''; }
   logAudit('DELETE_TYRE', `Ban ${t?.tyreId||id} dilepas dari posisi ${t?.position}`);
   saveState(); renderTyre();
+  maybeAutoSyncGAS();
   toast('Ban dilepas dari posisi (slot dikosongkan).', 'warn');
 }
 function openTyreLogModal(){
@@ -3287,6 +3578,7 @@ function saveTyreLog(){
   state.tyreLogs.unshift({id:uid('tl'), tanggal, tyreId, tread, pressure, cutCrack, action, kondisi});
   logAudit('ADD_TYRE_LOG', `Inspeksi ban ${tyreId} dicatat (action: ${action})`);
   saveState(); closeModal('modalTyreLog'); renderTyreLogTable();
+  maybeAutoSyncGAS();
   toast('Log inspeksi tersimpan.', 'ok');
 }
 
@@ -3463,6 +3755,7 @@ function saveServiceConfig(){
   });
   logAudit('EDIT_SERVICE_CONFIG', 'Konfigurasi interval service & life component diperbarui');
   saveState(); closeModal('modalServiceConfig'); renderServiceTable();
+  maybeAutoSyncGAS();
   toast('Konfigurasi service disimpan.', 'ok');
 }
 function exportServiceExcel(){
@@ -3693,13 +3986,14 @@ function saveWorkorder(){
     toast('Workorder tersimpan.', 'ok');
   }
   saveState(); closeModal('modalWorkorder'); renderWorkorderTable(); renderUnitsTable();
-  syncWorkorderToGAS(false, record);
+  maybeAutoSyncGAS();
 }
 function deleteWorkorder(id){
   if(!confirm('Hapus workorder ini?')) return;
   state.workorders = state.workorders.filter(x=>x.id!==id);
   logAudit('DELETE_WO', `Workorder dihapus (id:${id})`);
   saveState(); renderWorkorderTable(); renderUnitsTable();
+  maybeAutoSyncGAS();
   toast('Workorder dihapus.', 'warn');
 }
 function exportWorkorderExcel(){
@@ -3772,34 +4066,488 @@ function importWorkorderFile(file){
   };
   reader.readAsArrayBuffer(file);
 }
-function loadGasWoConfig(){
-  document.getElementById('gasWoWebAppUrl').value = state.gasConfigWO?.url || '';
-  document.getElementById('gasWoAutoSync').checked = !!state.gasConfigWO?.autoSync;
-  updateGasWoStatusChip();
+
+/* ================= FUEL MANAGEMENT ================= */
+let fuelSort = {key:'tanggal', dir:-1};
+function computeStockAkhir(stockAwal, fuelIn, fuelOut){ return +((stockAwal||0) + (fuelIn||0) - (fuelOut||0)).toFixed(1); }
+// Cari data Input Harian yang cocok (unit+tanggal) untuk relasi Fuel_Out ke jam kerja & kegiatan
+function getDailyRef(unitId, tanggal){ return state.dailyLogs.find(l=>l.unitId===unitId && l.tanggal===tanggal) || null; }
+// Cari Stock_Akhir hari sebelumnya untuk unit yang sama, jadi Stock_Awal otomatis (ledger berjalan)
+function getPreviousStockAkhir(unitId, tanggal, excludeId){
+  const prior = state.fuelLogs.filter(f=>f.unitId===unitId && f.tanggal<tanggal && f.id!==excludeId).sort((a,b)=>b.tanggal.localeCompare(a.tanggal));
+  return prior.length ? prior[0].stockAkhir : null;
 }
-function saveGasWoConfig(){
-  state.gasConfigWO = { url: document.getElementById('gasWoWebAppUrl').value.trim(), autoSync: document.getElementById('gasWoAutoSync').checked };
-  saveState(); updateGasWoStatusChip();
+function fuelUnitLatest(unitId){
+  const logs = state.fuelLogs.filter(f=>f.unitId===unitId).sort((a,b)=>a.tanggal.localeCompare(b.tanggal));
+  return logs.length ? logs[logs.length-1] : null;
 }
-function updateGasWoStatusChip(){
-  const chip = document.getElementById('gasWoStatusChip'); if(!chip) return;
-  if(state.gasConfigWO?.url){ chip.textContent = 'Terkonfigurasi' + (state.gasConfigWO.autoSync?' · Auto-sync ON':''); chip.classList.add('on'); }
-  else { chip.textContent = 'Belum dikonfigurasi'; chip.classList.remove('on'); }
+function saveFuelConfig(){
+  const v = parseFloat(document.getElementById('fuelMinStock').value)||100;
+  state.fuelConfig = { minStock: v };
+  saveState(); renderFuelTable(); maybeAutoSyncGAS();
 }
-function syncWorkorderToGAS(manual, singleRecord){
-  const url = state.gasConfigWO?.url;
-  if(!url){ if(manual) toast('Isi dulu Web App URL Google Apps Script untuk Workorder.', 'warn'); return; }
-  const payload = singleRecord ? { mode:'upsert', rows:[singleRecord] } : { mode:'bulk', rows: state.workorders };
-  if(manual) toast('Mengirim data workorder ke Google Sheet...', 'info');
-  fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(payload) })
-    .then(()=>{ if(manual) toast('Permintaan sync terkirim.', 'ok'); logAudit('GAS_SYNC_WO', `Sync ${payload.rows.length} baris workorder ke Google Sheet`); saveState(); })
-    .catch(()=>{ if(manual) toast('Sync gagal — periksa URL Web App atau koneksi internet.', 'err'); });
+function resetFuelFilters(){ ['fFuelDate','fFuelUnit','fFuelSearch'].forEach(id=>document.getElementById(id).value=''); renderFuelTable(); }
+function renderFuelKpis(){
+  const totalOut = state.fuelLogs.reduce((s,f)=>s+f.fuelOut,0);
+  const totalIn = state.fuelLogs.reduce((s,f)=>s+f.fuelIn,0);
+  const minStock = state.fuelConfig?.minStock || 100;
+  const criticalUnits = state.units.filter(u=>{ const last = fuelUnitLatest(u.id); return last && last.stockAkhir < minStock; });
+  const avgConsumption = state.fuelLogs.length ? totalOut/state.fuelLogs.length : 0;
+  document.getElementById('fuelKpis').innerHTML =
+    kpiCard('⛽','Total Fuel In', fmtNum(totalIn,0)+' Ltr', 'Seluruh pengisian tercatat') +
+    kpiCard('🔥','Total Fuel Out', fmtNum(totalOut,0)+' Ltr', 'Total konsumsi tercatat') +
+    kpiCard('🔴','Unit Stock Kritis', criticalUnits.length, `Di bawah ambang ${fmtNum(minStock,0)} Ltr`) +
+    kpiCard('📊','Rata-rata Konsumsi/Hari', fmtNum(avgConsumption,1)+' Ltr', 'Per entri harian (seluruh unit)');
+  const banner = document.getElementById('fuelAlertBanner');
+  if(criticalUnits.length){
+    banner.style.display='flex'; banner.className='banner danger';
+    banner.innerHTML = `<b>🔴 Notifikasi Stock Kritis:</b>&nbsp;${criticalUnits.length} unit stock BBM di bawah ambang (${fmtNum(minStock,0)} Ltr): ${criticalUnits.slice(0,5).map(u=>`${escapeHtml(u.id)} (${fmtNum(fuelUnitLatest(u.id).stockAkhir,1)} Ltr)`).join(', ')}${criticalUnits.length>5?', dan lainnya':''} — segera jadwalkan pengisian.`;
+  } else banner.style.display='none';
+  updateFuelNavBadge();
 }
-window.addEventListener('beforeunload', ()=>{
-  if(state.gasConfigWO?.url && state.gasConfigWO?.autoSync){
-    try{ navigator.sendBeacon(state.gasConfigWO.url, JSON.stringify({mode:'bulk', rows: state.workorders})); }catch(e){}
-  }
+function renderFuelTable(){
+  document.getElementById('fuelMinStock').value = state.fuelConfig?.minStock ?? 100;
+  fillSelect('fFuelUnit', [...new Set(state.fuelLogs.map(f=>f.unitId))]);
+  renderFuelKpis();
+  const fDate = document.getElementById('fFuelDate').value;
+  const fUnit = document.getElementById('fFuelUnit').value;
+  const search = (document.getElementById('fFuelSearch').value||'').toLowerCase();
+  const minStock = state.fuelConfig?.minStock || 100;
+  let rows = state.fuelLogs.filter(f=>{
+    if(fDate && f.tanggal!==fDate) return false;
+    if(fUnit && f.unitId!==fUnit) return false;
+    if(search && !((f.operator||'').toLowerCase().includes(search) || (f.kegiatan||'').toLowerCase().includes(search))) return false;
+    return true;
+  });
+  rows.sort((a,b)=>{
+    let av=a[fuelSort.key], bv=b[fuelSort.key];
+    if(typeof av==='string') return av.localeCompare(bv)*fuelSort.dir;
+    return ((av||0)-(bv||0))*fuelSort.dir;
+  });
+  const perms = currentPerms();
+  document.getElementById('fuelTableBody').innerHTML = rows.slice(0,400).map(f=>{
+    const ref = getDailyRef(f.unitId, f.tanggal);
+    const critical = f.stockAkhir < minStock;
+    return `<tr class="${critical?'row-crit':''}">
+      <td>${fmtDate(f.tanggal)}</td><td><b>${escapeHtml(f.unitId)}</b></td>
+      <td>${fmtNum(f.stockAwal,1)}</td><td>${fmtNum(f.fuelIn,1)}</td><td>${fmtNum(f.fuelOut,1)}</td>
+      <td style="color:${critical?'var(--red)':'inherit'};font-weight:${critical?'800':'400'};">${fmtNum(f.stockAkhir,1)}${critical?' ⚠':''}</td>
+      <td>${ref?fmtNum(ref.jamKerja||0,1):'—'}</td><td>${escapeHtml(ref?ref.kegiatan:(f.kegiatan||'—'))}</td>
+      <td>${escapeHtml(f.operator||'—')}</td><td>${escapeHtml(f.catatan||'—')}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="openFuelModal('${f.id}')">✏️</button>
+        ${perms.crud?`<button class="btn btn-danger btn-sm" onclick="deleteFuel('${f.id}')">🗑️</button>`:''}
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="11" style="text-align:center;color:var(--text-dim);padding:24px;">Belum ada data fuel sesuai filter.</td></tr>`;
+  renderFuelCharts(); renderFuelInsights();
+}
+document.addEventListener('click', (e)=>{
+  const th = e.target.closest('#page-fuel thead th[data-sort]'); if(!th) return;
+  const key = th.dataset.sort;
+  fuelSort.dir = (fuelSort.key===key) ? -fuelSort.dir : 1;
+  fuelSort.key = key; renderFuelTable();
 });
+function renderFuelCharts(){
+  const sel = document.getElementById('fuelTrendUnit');
+  if(sel.options.length<=1){ const opts = state.units.map(u=>`<option value="${escapeHtml(u.id)}">${escapeHtml(u.id)}</option>`).join(''); sel.innerHTML = '<option value="__fleet__">Seluruh Fleet</option>'+opts; }
+  const unitId = sel.value || '__fleet__';
+  let logs = unitId==='__fleet__' ? state.fuelLogs : state.fuelLogs.filter(f=>f.unitId===unitId);
+  logs = logs.slice().sort((a,b)=>a.tanggal.localeCompare(b.tanggal));
+  const byDate = {};
+  logs.forEach(f=>{ if(!byDate[f.tanggal]) byDate[f.tanggal]={fuelIn:0,fuelOut:0,stockAkhir:0,n:0}; byDate[f.tanggal].fuelIn+=f.fuelIn; byDate[f.tanggal].fuelOut+=f.fuelOut; byDate[f.tanggal].stockAkhir+=f.stockAkhir; byDate[f.tanggal].n++; });
+  const dates = Object.keys(byDate).sort();
+  const c = chartColors();
+  destroyChart('chartFuelTrend');
+  charts.chartFuelTrend = new Chart(document.getElementById('chartFuelTrend'), {
+    data:{ labels: dates.map(d=>fmtDate(d)), datasets:[
+      {type:'bar', label:'Fuel In (Ltr)', data: dates.map(d=>+byDate[d].fuelIn.toFixed(1)), backgroundColor:c.green, borderRadius:4},
+      {type:'bar', label:'Fuel Out (Ltr)', data: dates.map(d=>+byDate[d].fuelOut.toFixed(1)), backgroundColor:c.red, borderRadius:4},
+      {type:'line', label: unitId==='__fleet__'?'Rata-rata Stock Akhir':'Stock Akhir', data: dates.map(d=>+(byDate[d].stockAkhir/byDate[d].n).toFixed(1)), borderColor:c.amber, yAxisID:'y1', pointRadius:0, borderWidth:2, tension:.3}
+    ]}, options: baseChartOpts({ scales:{ x:baseChartOpts().scales.x, y:Object.assign({},baseChartOpts().scales.y,{title:{display:true,text:'Liter',color:c.text}}), y1:{position:'right', grid:{drawOnChartArea:false}, ticks:{color:c.text}} } })
+  });
+  const byUnit = {};
+  state.fuelLogs.forEach(f=>{ byUnit[f.unitId]=(byUnit[f.unitId]||0)+f.fuelOut; });
+  const units = Object.keys(byUnit).sort((a,b)=>byUnit[b]-byUnit[a]);
+  destroyChart('chartFuelConsumption');
+  charts.chartFuelConsumption = new Chart(document.getElementById('chartFuelConsumption'), {
+    type:'bar', data:{ labels:units, datasets:[{label:'Total Fuel Out (Ltr)', data: units.map(u=>+byUnit[u].toFixed(1)), backgroundColor:c.steel2, borderRadius:5}]},
+    options: baseChartOpts()
+  });
+}
+function renderFuelInsights(){
+  const minStock = state.fuelConfig?.minStock || 100;
+  let html = '';
+  state.units.forEach(u=>{
+    const last = fuelUnitLatest(u.id); if(!last) return;
+    if(last.stockAkhir < minStock) html += `<div class="insight-item crit"><div class="dot"></div><div><b>${escapeHtml(u.id)}</b>: stock BBM tersisa ${fmtNum(last.stockAkhir,1)} Ltr (per ${fmtDate(last.tanggal)}) — di bawah ambang kritis ${fmtNum(minStock,0)} Ltr. Segera jadwalkan pengisian.</div></div>`;
+  });
+  // Cross-check konsistensi dengan Input Harian: fuelOut fuel log vs fuelLtr daily log yang berbeda jauh
+  const mismatches = [];
+  state.fuelLogs.forEach(f=>{
+    const ref = getDailyRef(f.unitId, f.tanggal);
+    if(ref && ref.fuelLtr>0 && Math.abs(ref.fuelLtr - f.fuelOut) > Math.max(5, ref.fuelLtr*0.15)){
+      mismatches.push({f, ref});
+    }
+  });
+  mismatches.slice(0,3).forEach(({f,ref})=>{
+    html += `<div class="insight-item warn"><div class="dot"></div><div><b>${escapeHtml(f.unitId)}</b> (${fmtDate(f.tanggal)}): Fuel Out di Fuel Management (${fmtNum(f.fuelOut,1)} Ltr) berbeda jauh dari Fuel tercatat di Input Harian (${fmtNum(ref.fuelLtr,1)} Ltr) — periksa konsistensi input di kedua modul.</div></div>`;
+  });
+  document.getElementById('fuelInsights').innerHTML = html || `<div class="insight-item ok"><div class="dot"></div><div>Tidak ada stock kritis maupun ketidaksesuaian data fuel yang terdeteksi saat ini.</div></div>`;
+}
+function onFuelFormChange(){
+  const unitId = document.getElementById('fuelUnitId').value;
+  const tanggal = document.getElementById('fuelTanggal').value;
+  const editId = document.getElementById('fuelEditId').value;
+  if(!unitId || !tanggal) return;
+  const prevStock = getPreviousStockAkhir(unitId, tanggal, editId);
+  if(prevStock!==null && !editId) document.getElementById('fuelStockAwal').value = prevStock;
+  const ref = getDailyRef(unitId, tanggal);
+  const banner = document.getElementById('fuelDailyRefBanner');
+  if(ref){
+    banner.innerHTML = `<b>🔗 Relasi Input Harian ditemukan:</b>&nbsp;Jam Kerja ${fmtNum(ref.jamKerja||0,1)} jam, Kegiatan: "${escapeHtml(ref.kegiatan||'-')}" , Fuel tercatat: ${fmtNum(ref.fuelLtr||0,1)} Ltr.
+      ${!editId?` <button class="btn btn-ghost btn-sm" style="margin-left:6px;" onclick="applyDailyRefToFuel()">Gunakan nilai ini →</button>`:''}`;
+  } else {
+    banner.innerHTML = `<b>ℹ️ Tidak ditemukan data Input Harian</b> untuk unit & tanggal ini — Fuel Out akan diisi manual tanpa referensi jam kerja/kegiatan otomatis.`;
+  }
+  updateFuelCalc();
+}
+function applyDailyRefToFuel(){
+  const unitId = document.getElementById('fuelUnitId').value, tanggal = document.getElementById('fuelTanggal').value;
+  const ref = getDailyRef(unitId, tanggal); if(!ref) return;
+  document.getElementById('fuelOut').value = ref.fuelLtr || 0;
+  document.getElementById('fuelOperator').value = ref.operator || '';
+  document.getElementById('fuelKegiatan').value = ref.kegiatan || '';
+  updateFuelCalc();
+}
+function updateFuelCalc(){
+  const stockAwal = parseFloat(document.getElementById('fuelStockAwal').value)||0;
+  const fuelIn = parseFloat(document.getElementById('fuelIn').value)||0;
+  const fuelOut = parseFloat(document.getElementById('fuelOut').value)||0;
+  const stockAkhir = computeStockAkhir(stockAwal, fuelIn, fuelOut);
+  document.getElementById('fuelPrevAwal').textContent = fmtNum(stockAwal,1);
+  document.getElementById('fuelPrevNet').textContent = (fuelIn-fuelOut>=0?'+':'') + fmtNum(fuelIn-fuelOut,1);
+  document.getElementById('fuelPrevAkhir').textContent = fmtNum(stockAkhir,1);
+  const banner = document.getElementById('fuelCriticalBanner');
+  const minStock = state.fuelConfig?.minStock || 100;
+  if(stockAkhir < minStock){
+    banner.style.display='flex'; banner.className='banner danger';
+    banner.innerHTML = `<b>⚠ Stock Kritis:</b>&nbsp;Stock Akhir (${fmtNum(stockAkhir,1)} Ltr) akan berada di bawah ambang kritis (${fmtNum(minStock,0)} Ltr).`;
+  } else if(stockAkhir < 0){
+    banner.style.display='flex'; banner.className='banner danger';
+    banner.innerHTML = `<b>⚠ Data Tidak Valid:</b>&nbsp;Stock Akhir minus — periksa kembali Fuel Out atau Stock Awal.`;
+  } else { banner.style.display='none'; }
+}
+function openFuelModal(id){
+  refreshUnitDropdowns();
+  const opts = state.units.map(u=>`<option value="${escapeHtml(u.id)}">${escapeHtml(u.id)} — ${escapeHtml(u.model)}</option>`).join('');
+  document.getElementById('fuelUnitId').innerHTML = opts;
+  document.getElementById('fuelEditId').value = id||'';
+  if(id){
+    const f = state.fuelLogs.find(x=>x.id===id);
+    document.getElementById('fuelModalTitle').textContent = 'Edit Data Fuel — ' + f.unitId;
+    document.getElementById('fuelTanggal').value = f.tanggal; document.getElementById('fuelUnitId').value = f.unitId;
+    document.getElementById('fuelStockAwal').value = f.stockAwal; document.getElementById('fuelIn').value = f.fuelIn; document.getElementById('fuelOut').value = f.fuelOut;
+    document.getElementById('fuelOperator').value = f.operator||''; document.getElementById('fuelKegiatan').value = f.kegiatan||''; document.getElementById('fuelCatatan').value = f.catatan||'';
+  } else {
+    document.getElementById('fuelModalTitle').textContent = 'Input Fuel Harian Baru';
+    document.getElementById('fuelTanggal').value = todayStr();
+    document.getElementById('fuelStockAwal').value = ''; document.getElementById('fuelIn').value = 0; document.getElementById('fuelOut').value = 0;
+    document.getElementById('fuelOperator').value=''; document.getElementById('fuelKegiatan').value=''; document.getElementById('fuelCatatan').value='';
+  }
+  onFuelFormChange();
+  openModal('modalFuel');
+}
+function saveFuel(){
+  const editId = document.getElementById('fuelEditId').value;
+  const tanggal = document.getElementById('fuelTanggal').value;
+  const unitId = document.getElementById('fuelUnitId').value;
+  const stockAwal = parseFloat(document.getElementById('fuelStockAwal').value)||0;
+  const fuelIn = parseFloat(document.getElementById('fuelIn').value)||0;
+  const fuelOut = parseFloat(document.getElementById('fuelOut').value)||0;
+  const operator = document.getElementById('fuelOperator').value.trim();
+  const kegiatan = document.getElementById('fuelKegiatan').value.trim();
+  const catatan = document.getElementById('fuelCatatan').value.trim();
+  if(!tanggal || !unitId){ toast('Tanggal dan Unit wajib diisi.', 'err'); return; }
+  const stockAkhir = computeStockAkhir(stockAwal, fuelIn, fuelOut);
+  const payload = {tanggal, unitId, stockAwal, fuelIn, fuelOut, stockAkhir, operator, kegiatan, catatan};
+  if(editId){
+    const f = state.fuelLogs.find(x=>x.id===editId); Object.assign(f, payload);
+    logAudit('EDIT_FUEL', `Data fuel ${unitId} (${tanggal}) diperbarui`);
+    toast('Data fuel diperbarui.', 'ok');
+  } else {
+    state.fuelLogs.push({id:uid('fl'), ...payload});
+    logAudit('ADD_FUEL', `Input fuel baru: ${unitId} (${tanggal})`);
+    toast('Data fuel tersimpan.', 'ok');
+  }
+  saveState(); closeModal('modalFuel'); renderFuelTable();
+  maybeAutoSyncGAS();
+}
+function deleteFuel(id){
+  if(!confirm('Hapus data fuel ini?')) return;
+  state.fuelLogs = state.fuelLogs.filter(x=>x.id!==id);
+  logAudit('DELETE_FUEL', `Data fuel dihapus (id:${id})`);
+  saveState(); renderFuelTable();
+  maybeAutoSyncGAS();
+  toast('Data fuel dihapus.', 'warn');
+}
+function exportFuelExcel(){
+  const rows = state.fuelLogs.map(f=>{ const ref=getDailyRef(f.unitId,f.tanggal); return {
+    Tanggal:f.tanggal, Unit_ID:f.unitId, Stock_Awal:f.stockAwal, Fuel_In:f.fuelIn, Fuel_Out:f.fuelOut, Stock_Akhir:f.stockAkhir,
+    'Jam_Kerja(Ref)': ref?ref.jamKerja||0:'', 'Kegiatan': f.kegiatan||(ref?ref.kegiatan:''), 'Operator/Driver':f.operator, Catatan:f.catatan }; });
+  exportRowsExcel(rows, 'Fuel_Management', 'Fuel_Management.xlsx');
+}
+function exportFuelPDF(){
+  const doc = new jspdf.jsPDF();
+  doc.setFontSize(14); doc.text('Laporan Fuel Management — Mineroz', 14, 16);
+  doc.setFontSize(9); doc.text('Dicetak: ' + new Date().toLocaleString('id-ID'), 14, 22);
+  doc.autoTable({
+    startY:28, styles:{fontSize:7.5},
+    head:[['Tanggal','Unit','Stock Awal','Fuel In','Fuel Out','Stock Akhir','Operator','Kegiatan']],
+    body: state.fuelLogs.map(f=>[fmtDate(f.tanggal), f.unitId, fmtNum(f.stockAwal,1), fmtNum(f.fuelIn,1), fmtNum(f.fuelOut,1), fmtNum(f.stockAkhir,1), f.operator||'-', f.kegiatan||'-'])
+  });
+  doc.save('Laporan_Fuel_Management.pdf');
+  toast('PDF Fuel Management diunduh.', 'ok');
+}
+function importFuelFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array', cellDates:true});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      let added=0, skipped=0;
+      const toDateStr = (v)=>{ if(!v) return ''; if(v instanceof Date) return v.toISOString().slice(0,10); if(typeof v==='number'){ const d=XLSX.SSF.parse_date_code(v); return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`; } return String(v); };
+      rows.forEach(rowObj=>{
+        const get = (...keys)=>{ for(const k of keys){ const found = Object.keys(rowObj).find(rk=>rk.toLowerCase().replace(/[\s_]/g,'')===k.toLowerCase().replace(/[\s_]/g,'')); if(found && rowObj[found]!=='') return rowObj[found]; } return ''; };
+        const tanggal = toDateStr(get('Tanggal','Date'));
+        const unitId = String(get('Unit_ID','Unit ID','Unit')||'').trim();
+        if(!tanggal || !unitId){ skipped++; return; }
+        const stockAwal = parseFloat(get('Stock_Awal','Stock Awal'))||0;
+        const fuelIn = parseFloat(get('Fuel_In','Fuel In'))||0;
+        const fuelOut = parseFloat(get('Fuel_Out','Fuel Out'))||0;
+        state.fuelLogs.push({
+          id: uid('fl'), tanggal, unitId, stockAwal, fuelIn, fuelOut, stockAkhir: computeStockAkhir(stockAwal,fuelIn,fuelOut),
+          operator: String(get('Operator/Driver','Operator')||''), kegiatan: String(get('Kegiatan')||''), catatan: String(get('Catatan')||'')
+        });
+        added++;
+      });
+      logAudit('IMPORT_FUEL', `Import ${added} data fuel dari file (${file.name}), ${skipped} dilewati`);
+      saveState(); renderFuelTable();
+      toast(`Import selesai: ${added} baris ditambahkan${skipped?`, ${skipped} dilewati`:''}.`, added?'ok':'warn');
+    }catch(err){ console.error(err); toast('Gagal membaca file fuel. Periksa format kolom.', 'err'); }
+    document.getElementById('fuelImportFile').value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ---- Tab switcher: Per Unit vs Storage/Tangki Induk ---- */
+function switchFuelView(view){
+  const isUnit = view==='unit';
+  document.getElementById('fuelViewUnit').style.display = isUnit ? '' : 'none';
+  document.getElementById('fuelViewStorage').style.display = isUnit ? 'none' : '';
+  document.getElementById('fuelActionsUnit').style.display = isUnit ? '' : 'none';
+  document.getElementById('fuelActionsStorage').style.display = isUnit ? 'none' : '';
+  document.getElementById('fuelTabUnitBtn').classList.toggle('active', isUnit);
+  document.getElementById('fuelTabStorageBtn').classList.toggle('active', !isUnit);
+  if(!isUnit) renderFuelStorage();
+}
+
+/* ================= FUEL STORAGE (TANGKI INDUK) ================= */
+// Fuel_Out tangki induk pada suatu tanggal = total Fuel_In yang dicatat di semua unit pada tanggal tsb
+// (karena BBM yang masuk ke tangki unit pasti berasal dari tangki induk).
+function unitDispensedOnDate(tanggal){
+  return state.fuelLogs.filter(f=>f.tanggal===tanggal).reduce((s,f)=>s+(f.fuelIn||0),0);
+}
+function buildFuelStorageLedger(){
+  const cfg = state.fuelStorageConfig || { openingStock:0, openingDate: todayStr(), minStock:3000 };
+  const dates = new Set();
+  state.fuelStorageLogs.forEach(f=>{ if(f.tanggal>=cfg.openingDate) dates.add(f.tanggal); });
+  state.fuelLogs.forEach(f=>{ if(f.fuelIn>0 && f.tanggal>=cfg.openingDate) dates.add(f.tanggal); });
+  const sorted = [...dates].sort();
+  let running = cfg.openingStock || 0;
+  const ledger = [];
+  sorted.forEach(tanggal=>{
+    const inAmt = state.fuelStorageLogs.filter(f=>f.tanggal===tanggal).reduce((s,f)=>s+f.fuelIn,0);
+    const outAmt = unitDispensedOnDate(tanggal);
+    const stockAwal = running;
+    running = +(running + inAmt - outAmt).toFixed(1);
+    ledger.push({ tanggal, stockAwal: +stockAwal.toFixed(1), fuelIn: +inAmt.toFixed(1), fuelOut: +outAmt.toFixed(1), stockAkhir: running });
+  });
+  return ledger;
+}
+function currentStorageStock(){
+  const ledger = buildFuelStorageLedger();
+  if(ledger.length) return ledger[ledger.length-1].stockAkhir;
+  return state.fuelStorageConfig?.openingStock || 0;
+}
+function loadFuelStorageConfigUI(){
+  const cfg = state.fuelStorageConfig || {};
+  document.getElementById('fuelStorageOpening').value = cfg.openingStock ?? 5000;
+  document.getElementById('fuelStorageOpeningDate').value = cfg.openingDate || daysAgoStr(60);
+  document.getElementById('fuelStorageCapacity').value = cfg.capacity ?? '';
+  document.getElementById('fuelStorageMinStock').value = cfg.minStock ?? 3000;
+}
+function saveFuelStorageConfig(){
+  state.fuelStorageConfig = {
+    openingStock: parseFloat(document.getElementById('fuelStorageOpening').value)||0,
+    openingDate: document.getElementById('fuelStorageOpeningDate').value || daysAgoStr(60),
+    capacity: parseFloat(document.getElementById('fuelStorageCapacity').value)||null,
+    minStock: parseFloat(document.getElementById('fuelStorageMinStock').value)||3000,
+  };
+  saveState(); renderFuelStorage(); maybeAutoSyncGAS();
+}
+function renderFuelStorageKpis(ledger){
+  const cfg = state.fuelStorageConfig || {};
+  const current = ledger.length ? ledger[ledger.length-1].stockAkhir : (cfg.openingStock||0);
+  const totalIn = state.fuelStorageLogs.reduce((s,f)=>s+f.fuelIn,0);
+  const totalOut = ledger.reduce((s,l)=>s+l.fuelOut,0);
+  const critical = current < (cfg.minStock||3000);
+  const pctCap = cfg.capacity ? clamp(current/cfg.capacity*100,0,999) : null;
+  document.getElementById('fuelStorageKpis').innerHTML =
+    kpiCard('🛢️','Stock Tangki Saat Ini', fmtNum(current,0)+' Ltr', pctCap!==null?`${fmtNum(pctCap,0)}% dari kapasitas`:'Kapasitas belum diisi') +
+    kpiCard('🚚','Total Pengiriman', fmtNum(totalIn,0)+' Ltr', `${state.fuelStorageLogs.length} kali pengiriman`) +
+    kpiCard('📤','Total Disalurkan ke Unit', fmtNum(totalOut,0)+' Ltr', 'Otomatis dari data Per Unit') +
+    kpiCard(critical?'🔴':'🟢','Status Tangki', critical?'Kritis':'Aman', critical?'Segera jadwalkan pengiriman':'Stock mencukupi');
+  const banner = document.getElementById('fuelStorageAlertBanner');
+  if(critical){
+    banner.style.display='flex'; banner.className='banner danger';
+    banner.innerHTML = `<b>🔴 Stock Tangki Induk Kritis:</b>&nbsp;Sisa ${fmtNum(current,0)} Ltr, di bawah ambang ${fmtNum(cfg.minStock||3000,0)} Ltr. Segera hubungi supplier untuk pengiriman berikutnya.`;
+  } else banner.style.display='none';
+}
+function renderFuelStorageChart(ledger){
+  const c = chartColors();
+  destroyChart('chartFuelStorageTrend');
+  charts.chartFuelStorageTrend = new Chart(document.getElementById('chartFuelStorageTrend'), {
+    data:{ labels: ledger.map(l=>fmtDate(l.tanggal)), datasets:[
+      {type:'bar', label:'Fuel In (Pengiriman)', data: ledger.map(l=>l.fuelIn), backgroundColor:c.green, borderRadius:4},
+      {type:'bar', label:'Fuel Out (ke Unit)', data: ledger.map(l=>l.fuelOut), backgroundColor:c.red, borderRadius:4},
+      {type:'line', label:'Stock Akhir', data: ledger.map(l=>l.stockAkhir), borderColor:c.amber, yAxisID:'y1', pointRadius:0, borderWidth:2, tension:.3}
+    ]}, options: baseChartOpts({ scales:{ x:baseChartOpts().scales.x, y:Object.assign({},baseChartOpts().scales.y,{title:{display:true,text:'Liter',color:c.text}}), y1:{position:'right', grid:{drawOnChartArea:false}, ticks:{color:c.text}} } })
+  });
+}
+function renderFuelStorageInsights(ledger){
+  const cfg = state.fuelStorageConfig || {};
+  let html = '';
+  const current = ledger.length ? ledger[ledger.length-1].stockAkhir : (cfg.openingStock||0);
+  if(current < (cfg.minStock||3000)){
+    const avgDailyOut = ledger.length ? ledger.slice(-14).reduce((s,l)=>s+l.fuelOut,0)/Math.min(14,ledger.length) : 0;
+    const daysLeft = avgDailyOut>0 ? Math.floor(current/avgDailyOut) : null;
+    html += `<div class="insight-item crit"><div class="dot"></div><div>Stock tangki induk kritis (${fmtNum(current,0)} Ltr)${daysLeft!==null?` — diperkirakan habis dalam <b>${daysLeft} hari</b> pada laju konsumsi rata-rata saat ini` : ''}. Segera pesan pengiriman BBM berikutnya.</div></div>`;
+  }
+  const negativeDay = ledger.find(l=>l.stockAkhir<0);
+  if(negativeDay) html += `<div class="insight-item crit"><div class="dot"></div><div>Ledger menunjukkan stock minus pada <b>${fmtDate(negativeDay.tanggal)}</b> — kemungkinan ada pengiriman BBM yang belum dicatat, atau Opening Balance/Tanggal perlu disesuaikan.</div></div>`;
+  if(cfg.capacity){
+    const near = ledger.filter(l=>l.stockAkhir > cfg.capacity*0.95).length;
+    if(near>0) html += `<div class="insight-item warn"><div class="dot"></div><div>Beberapa hari stock tangki mendekati/melebihi kapasitas (${fmtNum(cfg.capacity,0)} Ltr) — periksa jadwal pengiriman agar tidak overflow.</div></div>`;
+  }
+  document.getElementById('fuelStorageInsights').innerHTML = html || `<div class="insight-item ok"><div class="dot"></div><div>Stock tangki induk dalam kondisi aman, tidak ada anomali ledger terdeteksi.</div></div>`;
+}
+function renderFuelStorageDeliveryTable(){
+  const perms = currentPerms();
+  const rows = state.fuelStorageLogs.slice().sort((a,b)=>b.tanggal.localeCompare(a.tanggal));
+  document.getElementById('fuelStorageDeliveryBody').innerHTML = rows.map(f=>`<tr>
+    <td>${fmtDate(f.tanggal)}</td><td><b>${fmtNum(f.fuelIn,1)}</b></td><td>${escapeHtml(f.supplier||'—')}</td>
+    <td>${escapeHtml(f.noSurat||'—')}</td><td>${escapeHtml(f.catatan||'—')}</td>
+    <td>
+      <button class="btn btn-ghost btn-sm" onclick="openFuelStorageModal('${f.id}')">✏️</button>
+      ${perms.crud?`<button class="btn btn-danger btn-sm" onclick="deleteFuelStorage('${f.id}')">🗑️</button>`:''}
+    </td>
+  </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;">Belum ada pengiriman BBM tercatat.</td></tr>`;
+}
+function renderFuelStorageLedgerTable(ledger){
+  const rows = ledger.slice().sort((a,b)=>b.tanggal.localeCompare(a.tanggal)).slice(0,120);
+  const cfg = state.fuelStorageConfig || {};
+  document.getElementById('fuelStorageLedgerBody').innerHTML = rows.map(l=>{
+    const critical = l.stockAkhir < (cfg.minStock||3000);
+    return `<tr class="${critical?'row-crit':''}"><td>${fmtDate(l.tanggal)}</td><td>${fmtNum(l.stockAwal,1)}</td>
+      <td style="color:var(--green);">+${fmtNum(l.fuelIn,1)}</td><td style="color:var(--red);">−${fmtNum(l.fuelOut,1)}</td>
+      <td style="font-weight:700;color:${critical?'var(--red)':'inherit'};">${fmtNum(l.stockAkhir,1)}${critical?' ⚠':''}</td></tr>`;
+  }).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:20px;">Belum ada aktivitas tangki induk.</td></tr>`;
+}
+function renderFuelStorage(){
+  loadFuelStorageConfigUI();
+  const ledger = buildFuelStorageLedger();
+  renderFuelStorageKpis(ledger);
+  renderFuelStorageChart(ledger);
+  renderFuelStorageInsights(ledger);
+  renderFuelStorageDeliveryTable();
+  renderFuelStorageLedgerTable(ledger);
+  updateFuelNavBadge();
+}
+function updateFuelNavBadge(){
+  const minStock = state.fuelConfig?.minStock || 100;
+  const criticalUnits = state.units.filter(u=>{ const last=fuelUnitLatest(u.id); return last && last.stockAkhir<minStock; }).length;
+  const storageCritical = currentStorageStock() < (state.fuelStorageConfig?.minStock||3000) ? 1 : 0;
+  const total = criticalUnits + storageCritical;
+  const badge = document.getElementById('fuelBadge');
+  if(total>0){ badge.style.display='inline-flex'; badge.textContent = total; } else badge.style.display='none';
+}
+function openFuelStorageModal(id){
+  document.getElementById('fsEditId').value = id||'';
+  if(id){
+    const f = state.fuelStorageLogs.find(x=>x.id===id);
+    document.getElementById('fuelStorageModalTitle').textContent = 'Edit Pengiriman BBM';
+    document.getElementById('fsTanggal').value = f.tanggal; document.getElementById('fsFuelIn').value = f.fuelIn;
+    document.getElementById('fsSupplier').value = f.supplier||''; document.getElementById('fsNoSurat').value = f.noSurat||'';
+    document.getElementById('fsCatatan').value = f.catatan||'';
+  } else {
+    document.getElementById('fuelStorageModalTitle').textContent = 'Catat Pengiriman BBM ke Tangki Induk';
+    document.getElementById('fsTanggal').value = todayStr();
+    document.getElementById('fsFuelIn').value=''; document.getElementById('fsSupplier').value=''; document.getElementById('fsNoSurat').value=''; document.getElementById('fsCatatan').value='';
+  }
+  document.getElementById('fsPreviewBanner').innerHTML = `<b>ℹ️ Info:</b>&nbsp;Stock tangki induk saat ini: <b>${fmtNum(currentStorageStock(),1)} Ltr</b>. Fuel Out akan otomatis dihitung dari total Fuel_In seluruh unit pada tanggal terkait — tidak perlu diisi manual.`;
+  openModal('modalFuelStorage');
+}
+function saveFuelStorage(){
+  const editId = document.getElementById('fsEditId').value;
+  const tanggal = document.getElementById('fsTanggal').value;
+  const fuelIn = parseFloat(document.getElementById('fsFuelIn').value);
+  const supplier = document.getElementById('fsSupplier').value.trim();
+  const noSurat = document.getElementById('fsNoSurat').value.trim();
+  const catatan = document.getElementById('fsCatatan').value.trim();
+  if(!tanggal || isNaN(fuelIn) || fuelIn<=0){ toast('Tanggal dan Jumlah Fuel In (harus > 0) wajib diisi.', 'err'); return; }
+  if(editId){
+    const f = state.fuelStorageLogs.find(x=>x.id===editId);
+    Object.assign(f, {tanggal, fuelIn, supplier, noSurat, catatan});
+    logAudit('EDIT_FUEL_STORAGE', `Pengiriman BBM ${tanggal} diperbarui (${fuelIn} Ltr)`);
+    toast('Data pengiriman diperbarui.', 'ok');
+  } else {
+    state.fuelStorageLogs.push({id:uid('fs'), tanggal, fuelIn, supplier, noSurat, catatan});
+    logAudit('ADD_FUEL_STORAGE', `Pengiriman BBM baru: ${fuelIn} Ltr (${tanggal}, ${supplier||'-'})`);
+    toast('Pengiriman BBM tercatat.', 'ok');
+  }
+  saveState(); closeModal('modalFuelStorage'); renderFuelStorage();
+  maybeAutoSyncGAS();
+}
+function deleteFuelStorage(id){
+  if(!confirm('Hapus catatan pengiriman BBM ini?')) return;
+  state.fuelStorageLogs = state.fuelStorageLogs.filter(x=>x.id!==id);
+  logAudit('DELETE_FUEL_STORAGE', `Catatan pengiriman BBM dihapus (id:${id})`);
+  saveState(); renderFuelStorage();
+  maybeAutoSyncGAS();
+  toast('Catatan pengiriman dihapus.', 'warn');
+}
+function exportFuelStorageExcel(){
+  const ledger = buildFuelStorageLedger();
+  const rows = ledger.map(l=>({ Tanggal:l.tanggal, Stock_Awal:l.stockAwal, Fuel_In:l.fuelIn, Fuel_Out_ke_Unit:l.fuelOut, Stock_Akhir:l.stockAkhir }));
+  exportRowsExcel(rows, 'Fuel_Storage_Ledger', 'Fuel_Storage_Ledger.xlsx');
+}
+function exportFuelStoragePDF(){
+  const ledger = buildFuelStorageLedger();
+  const doc = new jspdf.jsPDF();
+  doc.setFontSize(14); doc.text('Laporan Fuel Storage (Tangki Induk) — Mineroz', 14, 16);
+  doc.setFontSize(9); doc.text('Dicetak: ' + new Date().toLocaleString('id-ID'), 14, 22);
+  doc.autoTable({
+    startY:28, styles:{fontSize:7.5},
+    head:[['Tanggal','Stock Awal','Fuel In','Fuel Out (ke Unit)','Stock Akhir']],
+    body: ledger.map(l=>[fmtDate(l.tanggal), fmtNum(l.stockAwal,1), fmtNum(l.fuelIn,1), fmtNum(l.fuelOut,1), fmtNum(l.stockAkhir,1)])
+  });
+  doc.save('Laporan_Fuel_Storage.pdf');
+  toast('PDF Fuel Storage diunduh.', 'ok');
+}
 
 /* ================= REPORTS ================= */
 function renderReports(){
@@ -3821,6 +4569,11 @@ function renderReports(){
   const svcRows = computeServiceRows().filter(r=>r.status!=='Upcoming');
   svcRows.slice(0,5).forEach(r=> html += `<div class="insight-item ${r.status==='Overdue'?'crit':'warn'}"><div class="dot"></div><div><b>${escapeHtml(r.unitId)}</b> — komponen ${escapeHtml(r.component)} berstatus ${r.status}.</div></div>`);
   state.tyres.filter(t=>tyreStatus(t).cls==='red').slice(0,5).forEach(t=> html += `<div class="insight-item crit"><div class="dot"></div><div>Ban <b>${escapeHtml(t.tyreId)}</b> (${escapeHtml(t.unitId)}) mendekati akhir umur pakai (${fmtInt(t.hmSince)}/${fmtInt(t.lifeStd)} jam).</div></div>`);
+  const minStock = state.fuelConfig?.minStock || 100;
+  state.units.filter(u=>{ const last=fuelUnitLatest(u.id); return last && last.stockAkhir<minStock; }).slice(0,5).forEach(u=>{
+    const last = fuelUnitLatest(u.id);
+    html += `<div class="insight-item crit"><div class="dot"></div><div>Unit <b>${escapeHtml(u.id)}</b>: stock BBM ${fmtNum(last.stockAkhir,1)} Ltr — di bawah ambang kritis (${fmtNum(minStock,0)} Ltr).</div></div>`;
+  });
   document.getElementById('reportInsights').innerHTML = html || `<div class="insight-item ok"><div class="dot"></div><div>Tidak ada highlight kritis pada periode ini — seluruh fleet dalam kondisi baik.</div></div>`;
   document.getElementById('reportSummaryBody').innerHTML = state.units.map(u=>{
     const ulogs = logsInPeriod(u.id, days); const m = aggregateMetrics(ulogs);
@@ -3897,6 +4650,8 @@ function renderDashboard(){
   const svcRows = computeServiceRows();
   const overdue = svcRows.filter(r=>r.status==='Overdue').length;
   const redTyres = state.tyres.filter(t=>tyreStatus(t).cls==='red').length;
+  const minStock = state.fuelConfig?.minStock || 100;
+  const criticalFuel = state.units.filter(u=>{ const last = fuelUnitLatest(u.id); return last && last.stockAkhir < minStock; }).length;
   document.getElementById('dashKpis').innerHTML =
     kpiMetricCard('PA Fleet', agg.pa, 'var(--steel-2)') + kpiMetricCard('MA Fleet', agg.ma, 'var(--amber)') +
     kpiCard('🛠️','Komponen Overdue Service', overdue, overdue>0?'Perlu tindakan segera':'Aman') +
@@ -3931,6 +4686,7 @@ function renderDashboard(){
   if(agg.pa < 78) html += `<div class="insight-item crit"><div class="dot"></div><div>PA Fleet berada di <b>${fmtNum(agg.pa,0)}%</b> — di bawah target sehat (≥80%). Tinjau distribusi standby & breakdown pada Pareto.</div></div>`;
   if(overdue>0) html += `<div class="insight-item crit"><div class="dot"></div><div><b>${overdue} komponen</b> berstatus Overdue service di seluruh fleet — lihat tab Service Forecast untuk detail.</div></div>`;
   if(redTyres>0) html += `<div class="insight-item warn"><div class="dot"></div><div><b>${redTyres} ban</b> mendekati akhir umur pakai — cek tab Tyre Management.</div></div>`;
+  if(criticalFuel>0) html += `<div class="insight-item crit"><div class="dot"></div><div><b>${criticalFuel} unit</b> stock BBM di bawah ambang kritis — cek tab Fuel Management.</div></div>`;
   const worstUnit = [...state.units].map(u=>({u, m:aggregateMetrics(logsInPeriod(u.id,period))})).sort((a,b)=>a.m.pa-b.m.pa)[0];
   if(worstUnit && worstUnit.m.pa < 75) html += `<div class="insight-item warn"><div class="dot"></div><div>Unit dengan performa terendah: <b>${escapeHtml(worstUnit.u.id)}</b> (PA ${fmtNum(worstUnit.m.pa,0)}%).</div></div>`;
   document.getElementById('dashInsights').innerHTML = html || `<div class="insight-item ok"><div class="dot"></div><div>Seluruh indikator fleet dalam kondisi baik pada periode ini.</div></div>`;
@@ -3947,16 +4703,17 @@ function renderPage(page){
   refreshUnitDropdowns();
   if(page==='dashboard') renderDashboard();
   else if(page==='populasi'){ populateUnitFilterOptions(); renderUnitsTable(); }
-  else if(page==='input'){ loadGasConfig(); renderDailyTable(); }
+  else if(page==='input'){ renderDailyTable(); }
   else if(page==='performance') renderPerformance();
   else if(page==='reliability') renderReliability();
   else if(page==='pareto') renderPareto();
   else if(page==='tyre') renderTyre();
   else if(page==='service') renderServiceTable();
-  else if(page==='workorder'){ loadGasWoConfig(); renderWorkorderTable(); }
+  else if(page==='workorder'){ renderWorkorderTable(); }
+  else if(page==='fuel'){ renderFuelTable(); }
   else if(page==='reports') renderReports();
   else if(page==='audit') renderAudit();
-  else if(page==='apiint') renderApiPage();
+  else if(page==='apiint'){ renderApiPage(); loadGasConfig(); }
 }
 function renderAll(){
   renderDashboard();
@@ -3966,6 +4723,7 @@ function renderAll(){
   renderTyre();
   fillSelect('fSvcComponent', COMPONENTS); renderServiceTable();
   renderWorkorderTable();
+  renderFuelTable();
   renderReports(); renderAudit(); renderApiPage();
   updateSyncUI();
 }
