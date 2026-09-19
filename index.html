@@ -246,6 +246,21 @@ tbody td{padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowr
 tbody tr:hover{background:rgba(255,255,255,.025);}
 .table-wrap{overflow-x:auto;max-height:520px;overflow-y:auto;border-radius:10px;border:1px solid var(--border);}
 .table-wrap.short{max-height:340px;}
+/* Sticky first/last column for wide tables (frozen corner so key info + actions stay visible while scrolling horizontally) */
+.sticky-col{position:sticky;left:0;z-index:4;background:var(--panel-solid);box-shadow:2px 0 6px rgba(0,0,0,.35);}
+.sticky-col-right{position:sticky;right:0;z-index:4;background:var(--panel-solid);box-shadow:-2px 0 6px rgba(0,0,0,.35);}
+thead .sticky-col,thead .sticky-col-right{z-index:6;background:rgba(15,20,32,.98);}
+tbody tr:hover .sticky-col,tbody tr:hover .sticky-col-right{background:#171f30;}
+.col-toggle-wrap{position:relative;}
+.col-toggle-panel{
+  position:absolute;top:calc(100% + 6px);right:0;z-index:60;min-width:220px;padding:12px;
+  background:var(--panel-solid);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow);display:none;
+}
+.col-toggle-panel.open{display:block;}
+.col-toggle-panel label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);padding:5px 2px;cursor:pointer;}
+.col-toggle-panel label:hover{color:var(--text);}
+.col-toggle-panel .cthead{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;margin:6px 0 2px;font-weight:700;}
+th.hcol,td.hcol{display:none !important;}
 
 .badge{padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:800;letter-spacing:.02em;display:inline-flex;align-items:center;gap:5px;}
 .badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;}
@@ -975,7 +990,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           <b>☁️ Sinkronisasi Google Sheet:</b>&nbsp;Data harian ikut tersinkron otomatis lewat pengaturan terpusat di tab <a href="#" onclick="document.querySelector('[data-page=&quot;apiint&quot;]').click();return false;" style="color:var(--steel-2);font-weight:700;">API / IoT → Sinkronisasi ke Google Spreadsheet</a> (satu konfigurasi untuk semua data aplikasi).
         </div>
         <div class="glass card" style="margin-bottom:16px;">
-          <div class="panel-head"><div class="panel-title"><span class="ic">🚨</span>Notifikasi Otomatis (PA Drop / MA Rendah / EU Stagnan / Fuel Abnormal)</div></div>
+          <div class="panel-head"><div class="panel-title"><span class="ic">🚨</span>Notifikasi Otomatis (PA Drop / MA Rendah / EU Stagnan)</div></div>
           <div class="insight-list" id="dailyNotifList"></div>
         </div>
         <div class="glass card" style="margin-bottom:16px;">
@@ -991,18 +1006,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
             <select id="fDailyKategori" onchange="renderDailyTable()"><option value="">Semua Kategori BD</option></select>
             <input type="text" id="fDailyOperator" placeholder="Cari Operator/Driver..." oninput="renderDailyTable()" style="min-width:160px;">
             <button class="btn btn-ghost btn-sm" onclick="resetDailyFilters()">Reset</button>
-            <span class="filter-hint" style="margin-left:auto;">Baris dengan <span class="badge b-red" style="padding:1px 7px;">⚠</span> = anomali (W+S+R ≠ 24, kemungkinan data ganda)</span>
+            <div class="col-toggle-wrap" style="margin-left:auto;">
+              <button class="btn btn-ghost btn-sm" onclick="toggleColPanel('dailyColPanel')">⚙️ Kolom</button>
+              <div class="col-toggle-panel" id="dailyColPanel">
+                <div class="cthead">Tampilkan Kolom</div>
+                <label><input type="checkbox" data-col="km" checked onchange="applyColToggle('dailyTableWrap',this)"> KM (Awal → Akhir)</label>
+                <label><input type="checkbox" data-col="jamkerja" checked onchange="applyColToggle('dailyTableWrap',this)"> Jam Kerja</label>
+                <label><input type="checkbox" data-col="kategori" checked onchange="applyColToggle('dailyTableWrap',this)"> Kategori BD</label>
+                <label><input type="checkbox" data-col="operator" checked onchange="applyColToggle('dailyTableWrap',this)"> Operator/Driver</label>
+                <label><input type="checkbox" data-col="kegiatan" checked onchange="applyColToggle('dailyTableWrap',this)"> Kegiatan</label>
+              </div>
+            </div>
           </div>
-          <div class="table-wrap">
+          <div class="filter-hint" style="margin-bottom:8px;">Baris dengan <span class="badge b-red" style="padding:1px 7px;">⚠</span> = anomali (W+S+R ≠ 24, kemungkinan data ganda) · Kolom <b>Unit</b> & <b>Aksi</b> tetap terlihat saat digeser ke samping.</div>
+          <div class="table-wrap" id="dailyTableWrap">
             <table>
               <thead><tr>
-                <th data-sort="tanggal">Tanggal</th><th data-sort="unitId">Unit</th>
-                <th data-sort="hmAwal">HM Awal</th><th data-sort="hmAkhir">HM Akhir</th>
-                <th data-sort="kmAwal">KM Awal</th><th data-sort="kmAkhir">KM Akhir</th><th data-sort="jumlahKm">Jumlah KM</th>
-                <th data-sort="jamKerjaAwal">Jam Kerja Awal</th><th data-sort="jamKerjaAkhir">Jam Kerja Akhir</th><th data-sort="jamKerja">Jam Kerja</th>
-                <th data-sort="w">W</th><th data-sort="s">S</th><th data-sort="r">R</th><th>Kategori BD</th>
-                <th data-sort="operator">Operator/Driver</th><th data-sort="fuelLtr">Fuel (Ltr)</th><th>Kegiatan</th>
-                <th data-sort="pa">PA%</th><th data-sort="ma">MA%</th><th data-sort="ua">UA%</th><th data-sort="eu">EU%</th><th>Aksi</th>
+                <th data-sort="unitId" class="sticky-col">Unit / Tanggal</th>
+                <th data-sort="hmAwal">HM (Awal → Akhir)</th>
+                <th data-sort="jumlahKm" data-col="km">KM (Awal → Akhir)</th>
+                <th data-sort="jamKerja" data-col="jamkerja">Jam Kerja (Awal → Akhir)</th>
+                <th data-sort="w">W</th><th data-sort="s">S</th><th data-sort="r">R</th>
+                <th data-col="kategori">Kategori BD</th>
+                <th data-sort="operator" data-col="operator">Operator/Driver</th>
+                <th data-col="kegiatan">Kegiatan</th>
+                <th data-sort="pa">PA%</th><th data-sort="ma">MA%</th><th data-sort="ua">UA%</th><th data-sort="eu">EU%</th>
+                <th class="sticky-col-right">Aksi</th>
               </tr></thead>
               <tbody id="dailyTableBody"></tbody>
             </table>
@@ -1300,16 +1329,31 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
               <option value="In Progress">In Progress</option><option value="Completed">Completed</option>
             </select>
             <button class="btn btn-ghost btn-sm" onclick="resetWoFilters()">Reset</button>
-            <span class="filter-hint" style="margin-left:auto;">Baris merah = Total Leadtime &gt; 14 hari (perlu perhatian)</span>
+            <div class="col-toggle-wrap" style="margin-left:auto;">
+              <button class="btn btn-ghost btn-sm" onclick="toggleColPanel('woColPanel')">⚙️ Kolom</button>
+              <div class="col-toggle-panel" id="woColPanel">
+                <div class="cthead">Detail Tanggal Leadtime</div>
+                <label><input type="checkbox" data-col="fpb" checked onchange="applyColToggle('woTableWrap',this)"> Tgl FPB</label>
+                <label><input type="checkbox" data-col="po" checked onchange="applyColToggle('woTableWrap',this)"> Tgl PO</label>
+                <label><input type="checkbox" data-col="kirim" checked onchange="applyColToggle('woTableWrap',this)"> Tgl Kirim</label>
+                <label><input type="checkbox" data-col="terima" checked onchange="applyColToggle('woTableWrap',this)"> Tgl Terima</label>
+                <label><input type="checkbox" data-col="mulai" checked onchange="applyColToggle('woTableWrap',this)"> Tgl Mulai</label>
+              </div>
+            </div>
           </div>
-          <div class="table-wrap">
+          <div class="filter-hint" style="margin-bottom:8px;">Baris merah = Total Leadtime &gt; 14 hari (perlu perhatian) · Kolom <b>Unit</b> & <b>Aksi</b> tetap terlihat saat digeser.</div>
+          <div class="table-wrap" id="woTableWrap">
             <table>
               <thead><tr>
-                <th data-sort="tanggal">Tanggal</th><th data-sort="unitId">Unit</th><th data-sort="driver">Driver/Operator</th><th data-sort="statusUnit">Status Unit</th>
+                <th data-sort="unitId" class="sticky-col">Unit / Tanggal</th>
+                <th data-sort="driver">Driver/Operator</th><th data-sort="statusUnit">Status Unit</th>
                 <th data-sort="partName">Part</th><th data-sort="category">Kategori</th>
-                <th data-sort="tglKejadian">Tgl Kejadian</th><th data-sort="tglFPB">Tgl FPB</th><th data-sort="tglPO">Tgl PO</th>
-                <th data-sort="tglKirim">Tgl Kirim</th><th data-sort="tglTerima">Tgl Terima</th><th data-sort="tglMulai">Tgl Mulai</th><th data-sort="tglSelesai">Tgl Selesai</th>
-                <th data-sort="ltTotal">Total Leadtime (hr)</th><th data-sort="status">Status WO</th><th>Aksi</th>
+                <th data-sort="tglKejadian">Tgl Kejadian</th>
+                <th data-sort="tglFPB" data-col="fpb">Tgl FPB</th><th data-sort="tglPO" data-col="po">Tgl PO</th>
+                <th data-sort="tglKirim" data-col="kirim">Tgl Kirim</th><th data-sort="tglTerima" data-col="terima">Tgl Terima</th><th data-sort="tglMulai" data-col="mulai">Tgl Mulai</th>
+                <th data-sort="tglSelesai">Tgl Selesai</th>
+                <th data-sort="ltTotal">Total Leadtime (hr)</th><th data-sort="status">Status WO</th>
+                <th class="sticky-col-right">Aksi</th>
               </tr></thead>
               <tbody id="woTableBody"></tbody>
             </table>
@@ -1629,14 +1673,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           <div class="guide-body">
             Tempat mencatat jam kerja & breakdown harian per unit — dasar dari seluruh perhitungan performa.
             <div class="guide-step"><div class="num">1</div><div class="txt">Klik <b>＋ Input Harian</b> (atau ⚡ Quick Input di Dashboard). Pilih Tanggal & Unit, lalu isi <b>HM Awal</b> dan <b>HM Akhir</b>.</div></div>
-            <div class="guide-step"><div class="num">2</div><div class="txt">Field opsional tambahan: <b>KM Awal/Akhir</b> (jarak tempuh), <b>Jam Kerja Awal/Akhir</b> (jam mulai/selesai shift), <b>Operator/Driver</b>, <b>Fuel (Ltr)</b>, dan <b>Kegiatan</b> — isi sesuai kebutuhan pelaporan site Anda.</div></div>
+            <div class="guide-step"><div class="num">2</div><div class="txt">Field opsional tambahan: <b>KM Awal/Akhir</b> (jarak tempuh), <b>Jam Kerja Awal/Akhir</b> (jam mulai/selesai shift), <b>Operator/Driver</b>, dan <b>Kegiatan</b> — isi sesuai kebutuhan pelaporan site Anda. Input konsumsi BBM dipisah ke tab <b>Fuel Management</b> agar tidak dobel input.</div></div>
             <div class="guide-step"><div class="num">3</div><div class="txt">Jika ada kerusakan, isi <b>Jam Breakdown (R)</b> dan pilih <b>Kategori Breakdown</b> (Engine, Hydraulic, dst). Kosongkan jika tidak ada breakdown hari itu.</div></div>
             <div class="guide-formula">W = HM Akhir − HM Awal
 S = 24 − (W + R)
 Jumlah KM = KM Akhir − KM Awal
 Jam Kerja = Jam Kerja Akhir − Jam Kerja Awal</div>
             <div class="guide-step"><div class="num">4</div><div class="txt">Nilai W, S, Jumlah KM, Jam Kerja, dan preview PA/MA muncul otomatis di kotak kalkulasi sebelum disimpan. Jika W+R melebihi 24 jam atau konsumsi fuel menyimpang jauh dari rata-rata fleet, muncul peringatan — periksa kembali input Anda.</div></div>
-            <div class="guide-step"><div class="num">5</div><div class="txt">Tabel harian bisa difilter per tanggal/unit/kategori/operator. Baris bertanda ⚠ menandakan kemungkinan data ganda/anomali. Panel <b>Notifikasi Otomatis</b> di atas tabel menyoroti unit dengan PA drop, MA rendah, EU stagnan, atau konsumsi fuel abnormal.</div></div>
+            <div class="guide-step"><div class="num">5</div><div class="txt">Tabel harian bisa difilter per tanggal/unit/kategori/operator. Baris bertanda ⚠ menandakan kemungkinan data ganda/anomali. Panel <b>Notifikasi Otomatis</b> di atas tabel menyoroti unit dengan PA drop, MA rendah, atau EU stagnan.</div></div>
             <div class="guide-step"><div class="num">6</div><div class="txt">Gunakan <b>⬆️ Import Excel/CSV</b> untuk mengunggah data harian secara massal, atau <b>⬇️ Excel/PDF</b> untuk mengunduh. Sinkronisasi ke Google Sheet diatur terpusat di tab <b>API/IoT</b> (satu konfigurasi untuk semua modul).</div></div>
           </div>
         </details>
@@ -1717,13 +1761,12 @@ MTTR = Total Waktu Perbaikan ÷ Jumlah Failure</div>
           <summary><span><span class="gi">⛽</span>Fuel Management</span><span class="arrow">▾</span></summary>
           <div class="guide-body">
             <div class="guide-step"><div class="num">1</div><div class="txt">Klik <b>＋ Input Fuel Harian</b>, pilih Unit dan Tanggal. <b>Stock Awal</b> otomatis terisi dari Stock Akhir hari sebelumnya untuk unit yang sama (ledger berjalan) — bisa ditimpa manual jika ada stock opname aktual.</div></div>
-            <div class="guide-step"><div class="num">2</div><div class="txt"><b>Relasi ke Input Harian:</b> jika ada data Input Harian untuk unit & tanggal yang sama, aplikasi menampilkan referensi Jam Kerja, Kegiatan, dan Fuel tercatat — klik <b>"Gunakan nilai ini"</b> untuk mengisi Fuel Out otomatis dari sana.</div></div>
+            <div class="guide-step"><div class="num">2</div><div class="txt"><b>Relasi ke Input Harian:</b> jika ada data Input Harian untuk unit & tanggal yang sama, aplikasi menampilkan referensi Jam Kerja & Kegiatan — klik <b>"Gunakan Operator & Kegiatan ini"</b> untuk mengisi otomatis dari sana. Input Fuel In/Out sendiri hanya dilakukan di sini (tidak ada field fuel di Input Harian) supaya tidak dobel input.</div></div>
             <div class="guide-formula">Stock Akhir = Stock Awal + Fuel In − Fuel Out</div>
             <div class="guide-step"><div class="num">3</div><div class="txt">Atur <b>Ambang Stock Kritis</b> (default 100 Ltr) di bagian atas halaman — unit dengan Stock Akhir di bawah ambang ini akan disorot merah di tabel, memicu notifikasi, dan muncul di badge sidebar.</div></div>
-            <div class="guide-step"><div class="num">4</div><div class="txt">Panel Insight juga menandai jika Fuel Out yang dicatat di sini berbeda jauh dari Fuel yang tercatat di Input Harian untuk unit & tanggal yang sama — berguna untuk cross-check konsistensi data antar operator.</div></div>
-            <div class="guide-step"><div class="num">5</div><div class="txt">Gunakan Import Excel/CSV untuk input massal, atau Export Excel/PDF untuk laporan. Sinkron ke Google Sheet mengikuti konfigurasi terpusat di tab API/IoT.</div></div>
-            <div class="guide-step"><div class="num">6</div><div class="txt"><b>Tab "Storage / Tangki Induk":</b> untuk mencatat BBM yang masuk ke tangki penyimpanan pusat (dari supplier/mobil tangki). Klik <b>＋ Catat Pengiriman BBM</b>, isi jumlah, supplier, dan no. surat jalan/DO. <b>Fuel Out tangki induk dihitung otomatis</b> = total Fuel In yang Anda catat di seluruh unit pada tanggal yang sama (di tab "Per Unit") — karena BBM ke unit pasti berasal dari tangki induk ini.</div></div>
-            <div class="guide-step"><div class="num">7</div><div class="txt">Atur <b>Stock Awal (Opening Balance)</b> dan tanggalnya sekali di awal pemakaian (sesuai stock fisik tangki saat itu), plus <b>Kapasitas Tangki</b> dan <b>Ambang Kritis</b> — sistem akan menghitung ledger harian otomatis dan memperingatkan jika stock tangki menipis atau diperkirakan habis dalam berapa hari ke depan.</div></div>
+            <div class="guide-step"><div class="num">4</div><div class="txt">Gunakan Import Excel/CSV untuk input massal, atau Export Excel/PDF untuk laporan. Sinkron ke Google Sheet mengikuti konfigurasi terpusat di tab API/IoT.</div></div>
+            <div class="guide-step"><div class="num">5</div><div class="txt"><b>Tab "Storage / Tangki Induk":</b> untuk mencatat BBM yang masuk ke tangki penyimpanan pusat (dari supplier/mobil tangki). Klik <b>＋ Catat Pengiriman BBM</b>, isi jumlah, supplier, dan no. surat jalan/DO. <b>Fuel Out tangki induk dihitung otomatis</b> = total Fuel In yang Anda catat di seluruh unit pada tanggal yang sama (di tab "Per Unit") — karena BBM ke unit pasti berasal dari tangki induk ini.</div></div>
+            <div class="guide-step"><div class="num">6</div><div class="txt">Atur <b>Stock Awal (Opening Balance)</b> dan tanggalnya sekali di awal pemakaian (sesuai stock fisik tangki saat itu), plus <b>Kapasitas Tangki</b> dan <b>Ambang Kritis</b> — sistem akan menghitung ledger harian otomatis dan memperingatkan jika stock tangki menipis atau diperkirakan habis dalam berapa hari ke depan.</div></div>
           </div>
         </details>
 
@@ -1845,10 +1888,12 @@ MTTR = Total Waktu Perbaikan ÷ Jumlah Failure</div>
           <option value="Attachment/Bucket">Attachment/Bucket</option><option value="Cooling System">Cooling System</option>
           <option value="Scheduled Maintenance">Scheduled Maintenance (PM)</option><option value="Lainnya">Lainnya</option>
       </select></div>
-      <div><label>Operator / Driver</label><input id="dailyOperator" placeholder="mis. Budi Santoso"></div>
-      <div><label>Fuel (Ltr)</label><input id="dailyFuelLtr" type="number" step="0.1" oninput="updateDailyCalc()"></div>
+      <div class="full"><label>Operator / Driver</label><input id="dailyOperator" placeholder="mis. Budi Santoso"></div>
       <div class="full"><label>Kegiatan</label><input id="dailyKegiatan" placeholder="mis. Hauling OB Pit A → Disposal"></div>
       <div class="full"><label>Catatan Breakdown (opsional)</label><input id="dailyNote" placeholder="Deskripsi singkat kerusakan"></div>
+    </div>
+    <div class="banner info" style="margin-top:12px;">
+      <b>ℹ️ Catatan:</b>&nbsp;Input konsumsi BBM (Fuel In/Out) sekarang dilakukan khusus di tab <a href="#" onclick="document.querySelector('[data-page=&quot;fuel&quot;]').click();return false;" style="color:var(--steel-2);font-weight:700;">Fuel Management</a> agar tidak dobel input — data Jam Kerja & Kegiatan dari sini akan otomatis muncul sebagai referensi di sana.
     </div>
     <div class="calc-preview" style="grid-template-columns:repeat(6,1fr);">
       <div><div class="v" id="prevW">0.0</div><div class="l">W (Jam)</div></div>
@@ -1858,7 +1903,6 @@ MTTR = Total Waktu Perbaikan ÷ Jumlah Failure</div>
       <div><div class="v" id="prevPA">0%</div><div class="l">PA</div></div>
       <div><div class="v" id="prevMA">0%</div><div class="l">MA</div></div>
     </div>
-    <div class="banner" id="dailyFuelBanner" style="display:none;margin-top:12px;"></div>
     <div class="banner" id="dailyAnomalyBanner" style="display:none;margin-top:12px;"></div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('modalDaily')">Batal</button>
@@ -2102,21 +2146,21 @@ const WHEEL_CONFIGS = {
     ]
   },
   '12R': {
-    label: '12R — Dump Truck (cth. Volvo FMX 440)',
+    label: '12R — Dump Truck 8x4 Twin-Steer (cth. Volvo FMX 440)',
     defaultLifeStd: 5500, defaultSize: '295/80R22.5',
     positions: [
-      {axle:1, side:'Left',        code:'F-L',    label:'Front Left'},
-      {axle:1, side:'Right',       code:'F-R',    label:'Front Right'},
-      {axle:2, side:'Left-Inner',  code:'A2-LI',  label:'Axle2 Left Inner'},
-      {axle:2, side:'Left-Outer',  code:'A2-LO',  label:'Axle2 Left Outer'},
-      {axle:2, side:'Right-Inner', code:'A2-RI',  label:'Axle2 Right Inner'},
-      {axle:2, side:'Right-Outer', code:'A2-RO',  label:'Axle2 Right Outer'},
-      {axle:3, side:'Left-Inner',  code:'A3-LI',  label:'Axle3 Left Inner'},
-      {axle:3, side:'Left-Outer',  code:'A3-LO',  label:'Axle3 Left Outer'},
-      {axle:3, side:'Right-Inner', code:'A3-RI',  label:'Axle3 Right Inner'},
-      {axle:3, side:'Right-Outer', code:'A3-RO',  label:'Axle3 Right Outer'},
-      {axle:4, side:'Left',  code:'LIFT-L', label:'Lift Axle Left'},
-      {axle:4, side:'Right', code:'LIFT-R', label:'Lift Axle Right'},
+      {axle:1, side:'Left',        code:'A1-L',  label:'A1 Left (Steering)'},
+      {axle:1, side:'Right',       code:'A1-R',  label:'A1 Right (Steering)'},
+      {axle:2, side:'Left',        code:'A2-L',  label:'A2 Left (Steering)'},
+      {axle:2, side:'Right',       code:'A2-R',  label:'A2 Right (Steering)'},
+      {axle:3, side:'Left-Outer',  code:'A3-LO', label:'A3 Left Outer (Drive)'},
+      {axle:3, side:'Left-Inner',  code:'A3-LI', label:'A3 Left Inner (Drive)'},
+      {axle:3, side:'Right-Inner', code:'A3-RI', label:'A3 Right Inner (Drive)'},
+      {axle:3, side:'Right-Outer', code:'A3-RO', label:'A3 Right Outer (Drive)'},
+      {axle:4, side:'Left-Outer',  code:'A4-LO', label:'A4 Left Outer (Drive)'},
+      {axle:4, side:'Left-Inner',  code:'A4-LI', label:'A4 Left Inner (Drive)'},
+      {axle:4, side:'Right-Inner', code:'A4-RI', label:'A4 Right Inner (Drive)'},
+      {axle:4, side:'Right-Outer', code:'A4-RO', label:'A4 Right Outer (Drive)'},
     ]
   },
 };
@@ -2144,10 +2188,10 @@ function positionBucket(side){
   return 'Rear Single';
 }
 function tyreFilterBucket(t){
-  if(t.axleNo===1) return 'Front';
   if((t.code||'').startsWith('LIFT')) return 'Lift Axle';
   if((t.side||'').toLowerCase().includes('inner')) return 'Rear Inner';
   if((t.side||'').toLowerCase().includes('outer')) return 'Rear Outer';
+  if(t.side==='Left'||t.side==='Right') return 'Front'; // ban single steering, berlaku untuk axle manapun (mis. A1 & A2 pada 8x4 twin-steer)
   return 'Rear Single';
 }
 
@@ -2282,13 +2326,12 @@ function seedData(){
       const jkEndDecimal = jkStartH + jkStartM/60 + W + R*0.3;
       const jkEndH = Math.min(23, Math.floor(jkEndDecimal)), jkEndM = Math.round((jkEndDecimal%1)*60);
       const jamKerjaAkhir = `${String(jkEndH).padStart(2,'0')}:${String(jkEndM).padStart(2,'0')}`;
-      const fuelLtr = +(W * (11 + Math.random()*3)).toFixed(1); // ~11-14 ltr/jam rata2 unit berat
       dailyLogs.push({
         id: uid('dl'), tanggal: date, unitId: u.id,
         hmAwal: +hm.toFixed(1), hmAkhir: +(hm+W).toFixed(1),
         kmAwal: +km.toFixed(1), kmAkhir: +(km+kmDelta).toFixed(1), jumlahKm: kmDelta,
         jamKerjaAwal, jamKerjaAkhir, jamKerja: +Math.max(0,(jkEndDecimal-(jkStartH+jkStartM/60))).toFixed(1),
-        w: W, s: S, r: R, kategori, operator: operatorPool[(uIdx+d)%operatorPool.length], fuelLtr,
+        w: W, s: S, r: R, kategori, operator: operatorPool[(uIdx+d)%operatorPool.length],
         kegiatan: kegiatanPool[(uIdx+d)%kegiatanPool.length],
         note: kategori ? (kategori+' — perbaikan lapangan') : '', anomaly
       });
@@ -2298,7 +2341,7 @@ function seedData(){
   });
   state.dailyLogs = dailyLogs;
 
-  // ---- Fuel Management: ledger stock BBM per unit, Fuel_Out mengikuti fuelLtr dari Input Harian (relasi jam kerja & kegiatan) ----
+  // ---- Fuel Management: ledger stock BBM per unit (input mandiri, terpisah dari Input Harian agar tidak dobel) ----
   const fuelLogs = [];
   const TANK_CAPACITY_DEFAULT = 400; // Ltr, asumsi kapasitas tangki unit berat untuk data sampel
   units.forEach((u)=>{
@@ -2306,7 +2349,7 @@ function seedData(){
     if(!uLogs.length) return;
     let stock = TANK_CAPACITY_DEFAULT * (0.5 + Math.random()*0.3); // stock awal random 50-80% kapasitas
     uLogs.forEach((l, idx)=>{
-      const fuelOut = l.fuelLtr || 0;
+      const fuelOut = +(l.w * (11 + Math.random()*3)).toFixed(1); // ~11-14 ltr/jam rata2 unit berat, dihitung mandiri di Fuel Management
       let fuelIn = 0;
       // refuel ketika stock akan menipis (<35% kapasitas) atau setiap ~4 hari sekali secara acak
       if(stock - fuelOut < TANK_CAPACITY_DEFAULT*0.35 || (idx>0 && idx % 4 === 0 && Math.random()<0.6)){
@@ -2524,6 +2567,34 @@ function globalSearchHandler(q){
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 
+/* ---- Generic column-visibility toggle (reusable for any wide table) ---- */
+function toggleColPanel(panelId){
+  document.querySelectorAll('.col-toggle-panel.open').forEach(p=>{ if(p.id!==panelId) p.classList.remove('open'); });
+  document.getElementById(panelId).classList.toggle('open');
+}
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.col-toggle-wrap')){ document.querySelectorAll('.col-toggle-panel.open').forEach(p=>p.classList.remove('open')); }
+});
+function applyColToggle(wrapId, checkboxEl){
+  const col = checkboxEl.dataset.col;
+  const show = checkboxEl.checked;
+  document.querySelectorAll(`#${wrapId} [data-col="${col}"]`).forEach(el=>{ el.classList.toggle('hcol', !show); });
+  const key = 'mps_colpref_' + wrapId;
+  let prefs = {};
+  try{ prefs = JSON.parse(localStorage.getItem(key)||'{}'); }catch(e){}
+  prefs[col] = show;
+  try{ localStorage.setItem(key, JSON.stringify(prefs)); }catch(e){}
+}
+function loadColPrefs(wrapId, panelId){
+  const key = 'mps_colpref_' + wrapId;
+  let prefs = {};
+  try{ prefs = JSON.parse(localStorage.getItem(key)||'{}'); }catch(e){}
+  document.querySelectorAll(`#${panelId} input[data-col]`).forEach(cb=>{
+    if(Object.prototype.hasOwnProperty.call(prefs, cb.dataset.col)) cb.checked = prefs[cb.dataset.col];
+    document.querySelectorAll(`#${wrapId} [data-col="${cb.dataset.col}"]`).forEach(el=>{ el.classList.toggle('hcol', !cb.checked); });
+  });
+}
+
 /* ================= POPULASI UNIT ================= */
 let unitSort = {key:'id', dir:1};
 function populateUnitFilterOptions(){
@@ -2715,22 +2786,6 @@ function updateDailyCalc(){
     banner.style.display='flex'; banner.className='banner danger';
     banner.innerHTML = `<b>⚠ Anomali:</b>&nbsp;W (${fmtNum(w,1)} jam) + R (${fmtNum(r,1)} jam) melebihi 24 jam. Periksa kembali HM Awal/Akhir atau jam breakdown yang diinput.`;
   } else { banner.style.display='none'; }
-  // fuel abnormality check vs fleet average consumption (ltr per working hour)
-  const fuel = parseFloat(document.getElementById('dailyFuelLtr').value);
-  const fuelBanner = document.getElementById('dailyFuelBanner');
-  if(!isNaN(fuel) && w>0){
-    const avg = fleetAvgFuelPerHour();
-    const rate = fuel/w;
-    if(avg>0 && (rate > avg*1.4 || rate < avg*0.6)){
-      fuelBanner.style.display='flex'; fuelBanner.className='banner danger';
-      fuelBanner.innerHTML = `<b>⚠ Fuel Abnormal:</b>&nbsp;Konsumsi ${fmtNum(rate,1)} Ltr/jam menyimpang jauh dari rata-rata fleet (${fmtNum(avg,1)} Ltr/jam). Periksa kembali input atau kondisi unit.`;
-    } else { fuelBanner.style.display='none'; }
-  } else { fuelBanner.style.display='none'; }
-}
-function fleetAvgFuelPerHour(){
-  const logs = state.dailyLogs.filter(l=>l.fuelLtr>0 && l.w>0);
-  if(!logs.length) return 0;
-  return logs.reduce((s,l)=>s+l.fuelLtr/l.w,0)/logs.length;
 }
 function resetDailyFilters(){
   document.getElementById('fDailyDate').value=''; document.getElementById('fDailyUnit').value='';
@@ -2761,21 +2816,22 @@ function renderDailyTable(){
   document.getElementById('dailyTableBody').innerHTML = shown.map(l=>{
     const anomaly = (l.w + l.r) > 24.2 || l.anomaly;
     return `<tr class="${anomaly?'row-warn':''}">
-      <td>${fmtDate(l.tanggal)} ${anomaly?'<span class="badge b-red" style="padding:1px 6px;">⚠</span>':''}</td>
-      <td><b>${escapeHtml(l.unitId)}</b></td>
-      <td>${fmtNum(l.hmAwal,1)}</td><td>${fmtNum(l.hmAkhir,1)}</td>
-      <td>${l.kmAwal?fmtNum(l.kmAwal,1):'—'}</td><td>${l.kmAkhir?fmtNum(l.kmAkhir,1):'—'}</td><td>${fmtNum(l.jumlahKm||0,1)}</td>
-      <td>${l.jamKerjaAwal||'—'}</td><td>${l.jamKerjaAkhir||'—'}</td><td>${fmtNum(l.jamKerja||0,1)}</td>
+      <td class="sticky-col"><b>${escapeHtml(l.unitId)}</b>${anomaly?' <span class="badge b-red" style="padding:1px 6px;">⚠</span>':''}<div style="font-size:10.5px;color:var(--text-dim);font-weight:400;">${fmtDate(l.tanggal)}</div></td>
+      <td>${fmtNum(l.hmAwal,1)} → ${fmtNum(l.hmAkhir,1)}</td>
+      <td data-col="km">${l.kmAwal?`${fmtNum(l.kmAwal,1)} → ${fmtNum(l.kmAkhir,1)}`:'—'}<div style="font-size:10.5px;color:var(--text-dim);">${fmtNum(l.jumlahKm||0,1)} km</div></td>
+      <td data-col="jamkerja">${l.jamKerjaAwal?`${l.jamKerjaAwal} → ${l.jamKerjaAkhir||'—'}`:'—'}<div style="font-size:10.5px;color:var(--text-dim);">${fmtNum(l.jamKerja||0,1)} jam</div></td>
       <td>${fmtNum(l.w,1)}</td><td>${fmtNum(l.s,1)}</td><td>${fmtNum(l.r,1)}</td>
-      <td>${l.kategori?`<span class="badge b-blue">${escapeHtml(l.kategori)}</span>`:'—'}</td>
-      <td>${escapeHtml(l.operator||'—')}</td><td>${l.fuelLtr?fmtNum(l.fuelLtr,1):'—'}</td><td>${escapeHtml(l.kegiatan||'—')}</td>
+      <td data-col="kategori">${l.kategori?`<span class="badge b-blue">${escapeHtml(l.kategori)}</span>`:'—'}</td>
+      <td data-col="operator">${escapeHtml(l.operator||'—')}</td>
+      <td data-col="kegiatan">${escapeHtml(l.kegiatan||'—')}</td>
       <td>${fmtNum(l.pa,0)}%</td><td>${fmtNum(l.ma,0)}%</td><td>${fmtNum(l.ua,0)}%</td><td>${fmtNum(l.eu,0)}%</td>
-      <td>
+      <td class="sticky-col-right">
         <button class="btn btn-ghost btn-sm" onclick="openDailyModal('${l.id}')">✏️</button>
         ${perms.crud?`<button class="btn btn-danger btn-sm" onclick="deleteDaily('${l.id}')">🗑️</button>`:''}
       </td>
     </tr>`;
-  }).join('') || `<tr><td colspan="21" style="text-align:center;color:var(--text-dim);padding:24px;">Belum ada data harian sesuai filter.</td></tr>`;
+  }).join('') || `<tr><td colspan="15" style="text-align:center;color:var(--text-dim);padding:24px;">Belum ada data harian sesuai filter.</td></tr>`;
+  loadColPrefs('dailyTableWrap','dailyColPanel');
   renderDailyNotifications();
   renderDailyTrendChart();
 }
@@ -2797,13 +2853,13 @@ function openDailyModal(id){
     document.getElementById('dailyKmAwal').value = l.kmAwal||''; document.getElementById('dailyKmAkhir').value = l.kmAkhir||'';
     document.getElementById('dailyJamKerjaAwal').value = l.jamKerjaAwal||''; document.getElementById('dailyJamKerjaAkhir').value = l.jamKerjaAkhir||'';
     document.getElementById('dailyR').value = l.r; document.getElementById('dailyKategori').value = l.kategori;
-    document.getElementById('dailyOperator').value = l.operator||''; document.getElementById('dailyFuelLtr').value = l.fuelLtr||'';
+    document.getElementById('dailyOperator').value = l.operator||'';
     document.getElementById('dailyKegiatan').value = l.kegiatan||'';
     document.getElementById('dailyNote').value = l.note||'';
   } else {
     document.getElementById('dailyModalTitle').textContent = 'Input Data Harian Baru';
     document.getElementById('dailyTanggal').value = todayStr();
-    ['dailyHmAwal','dailyHmAkhir','dailyKmAwal','dailyKmAkhir','dailyJamKerjaAwal','dailyJamKerjaAkhir','dailyOperator','dailyFuelLtr','dailyKegiatan','dailyNote'].forEach(f=>document.getElementById(f).value='');
+    ['dailyHmAwal','dailyHmAkhir','dailyKmAwal','dailyKmAkhir','dailyJamKerjaAwal','dailyJamKerjaAkhir','dailyOperator','dailyKegiatan','dailyNote'].forEach(f=>document.getElementById(f).value='');
     document.getElementById('dailyR').value = 0; document.getElementById('dailyKategori').value='';
   }
   updateDailyCalc();
@@ -2820,7 +2876,6 @@ function saveDaily(){
   const r = parseFloat(document.getElementById('dailyR').value)||0;
   const kategori = document.getElementById('dailyKategori').value;
   const operator = document.getElementById('dailyOperator').value.trim();
-  const fuelLtr = parseFloat(document.getElementById('dailyFuelLtr').value)||0;
   const kegiatan = document.getElementById('dailyKegiatan').value.trim();
   const note = document.getElementById('dailyNote').value.trim();
   if(!tanggal || !unitId || isNaN(hmAwal) || isNaN(hmAkhir)){ toast('Tanggal, Unit, HM Awal, dan HM Akhir wajib diisi.', 'err'); return; }
@@ -2831,7 +2886,7 @@ function saveDaily(){
   const jamKerja = (jkA!==null && jkB!==null) ? +Math.max(0,jkB-jkA).toFixed(2) : 0;
   const jumlahKm = (!isNaN(kmAwal) && !isNaN(kmAkhir)) ? +Math.max(0,kmAkhir-kmAwal).toFixed(1) : 0;
   const payload = {tanggal, unitId, hmAwal, hmAkhir, kmAwal: isNaN(kmAwal)?0:kmAwal, kmAkhir: isNaN(kmAkhir)?0:kmAkhir, jumlahKm,
-    jamKerjaAwal, jamKerjaAkhir, jamKerja, w, s, r, kategori, operator, fuelLtr, kegiatan, note, anomaly:false};
+    jamKerjaAwal, jamKerjaAkhir, jamKerja, w, s, r, kategori, operator, kegiatan, note, anomaly:false};
   let record;
   if(editId){
     record = state.dailyLogs.find(x=>x.id===editId); Object.assign(record, payload);
@@ -2857,11 +2912,10 @@ function deleteDaily(id){
 }
 function openQuickInput(){ document.querySelector('[data-page="input"]').click(); openDailyModal(); }
 
-/* ---- Notifikasi Otomatis: PA Drop / MA Rendah / EU Stagnan / Fuel Abnormal ---- */
+/* ---- Notifikasi Otomatis: PA Drop / MA Rendah / EU Stagnan ---- */
 function renderDailyNotifications(){
   const el = document.getElementById('dailyNotifList'); if(!el) return;
   let html = '';
-  const avgFuel = fleetAvgFuelPerHour();
   state.units.forEach(u=>{
     const logs = logsInPeriod(u.id, '14');
     if(!logs.length) return;
@@ -2876,14 +2930,8 @@ function renderDailyNotifications(){
       const stdev = Math.sqrt(variance);
       if(mean < 55 && stdev < 6) html += `<div class="insight-item warn"><div class="dot"></div><div><b>${escapeHtml(u.id)}</b>: EU stagnan di kisaran ${fmtNum(mean,0)}% (variasi kecil, tidak membaik) selama 14 hari terakhir — evaluasi utilisasi unit.</div></div>`;
     }
-    // Fuel abnormal vs fleet average
-    const fuelLogs = logs.filter(l=>l.fuelLtr>0 && l.w>0);
-    if(fuelLogs.length && avgFuel>0){
-      const unitAvg = fuelLogs.reduce((s,l)=>s+l.fuelLtr/l.w,0)/fuelLogs.length;
-      if(unitAvg > avgFuel*1.35) html += `<div class="insight-item crit"><div class="dot"></div><div><b>${escapeHtml(u.id)}</b>: konsumsi fuel rata-rata ${fmtNum(unitAvg,1)} Ltr/jam — ${fmtNum((unitAvg/avgFuel-1)*100,0)}% di atas rata-rata fleet (${fmtNum(avgFuel,1)} Ltr/jam). Periksa kebocoran/kalibrasi/kebiasaan operator.</div></div>`;
-    }
   });
-  el.innerHTML = html || `<div class="insight-item ok"><div class="dot"></div><div>Tidak ada anomali PA/MA/EU/Fuel yang terdeteksi pada 14 hari terakhir.</div></div>`;
+  el.innerHTML = html || `<div class="insight-item ok"><div class="dot"></div><div>Tidak ada anomali PA/MA/EU yang terdeteksi pada 14 hari terakhir. Cek tab Fuel Management untuk notifikasi stock BBM.</div></div>`;
 }
 function renderDailyTrendChart(){
   const sel = document.getElementById('dailyTrendUnit'); if(!sel) return;
@@ -2931,14 +2979,13 @@ function importDailyFile(file){
         const jamKerjaAkhir = String(get('Jam_Kerja_Akhir','Jam Kerja Akhir')||'');
         const kategori = String(get('Kategori BD','Kategori_Breakdown','Kategori Breakdown')||'');
         const operator = String(get('Operator/Driver','Operator','Driver')||'');
-        const fuelLtr = parseFloat(get('Fuel_Ltr','Fuel (Ltr)','Fuel'))||0;
         const kegiatan = String(get('Kegiatan')||'');
         const w = +(hmAkhir-hmAwal).toFixed(2);
         const s = +Math.max(0,24-(w+rBd)).toFixed(2);
         const jkA = timeToHours(jamKerjaAwal), jkB = timeToHours(jamKerjaAkhir);
         state.dailyLogs.push({ id:uid('dl'), tanggal, unitId, hmAwal, hmAkhir, kmAwal, kmAkhir, jumlahKm:+Math.max(0,kmAkhir-kmAwal).toFixed(1),
           jamKerjaAwal, jamKerjaAkhir, jamKerja: (jkA!==null&&jkB!==null)?+Math.max(0,jkB-jkA).toFixed(2):0,
-          w, s, r: rBd, kategori, operator, fuelLtr, kegiatan, note:'', anomaly:false });
+          w, s, r: rBd, kategori, operator, kegiatan, note:'', anomaly:false });
         added++;
       });
       logAudit('IMPORT_DAILY', `Import ${added} baris data harian dari file (${file.name}), ${skipped} baris dilewati`);
@@ -2957,10 +3004,10 @@ function exportDailyPDF(){
   doc.setFontSize(9); doc.text('Dicetak: ' + new Date().toLocaleString('id-ID'), 14, 22);
   doc.autoTable({
     startY:28, styles:{fontSize:6.5},
-    head:[['Tanggal','Unit','HM Awal','HM Akhir','KM Awal','KM Akhir','Jml KM','Jam Kerja','W','S','R','Kategori','Operator','Fuel','PA','MA','UA','EU']],
+    head:[['Tanggal','Unit','HM Awal','HM Akhir','KM Awal','KM Akhir','Jml KM','Jam Kerja','W','S','R','Kategori','Operator','PA','MA','UA','EU']],
     body: state.dailyLogs.map(l=>{ const m=computeRow(l.w,l.s,l.r); return [fmtDate(l.tanggal), l.unitId, fmtNum(l.hmAwal,1), fmtNum(l.hmAkhir,1),
       l.kmAwal?fmtNum(l.kmAwal,1):'-', l.kmAkhir?fmtNum(l.kmAkhir,1):'-', fmtNum(l.jumlahKm||0,1), fmtNum(l.jamKerja||0,1),
-      fmtNum(l.w,1), fmtNum(l.s,1), fmtNum(l.r,1), l.kategori||'-', l.operator||'-', l.fuelLtr?fmtNum(l.fuelLtr,1):'-',
+      fmtNum(l.w,1), fmtNum(l.s,1), fmtNum(l.r,1), l.kategori||'-', l.operator||'-',
       fmtNum(m.pa,0)+'%', fmtNum(m.ma,0)+'%', fmtNum(m.ua,0)+'%', fmtNum(m.eu,0)+'%' ]; })
   });
   doc.save('Laporan_Input_Harian.pdf');
@@ -3041,8 +3088,8 @@ function showGasScriptDocs(){
     body.units, function(u){ return [u.id,u.type,u.model,u.merk,u.tahun,u.lokasi,u.wheelConfig,u.lastHm]; });
 
   if (body.dailyLogs) upsertSheet('Data_Harian',
-    ['Tanggal','Unit_ID','HM_Awal','HM_Akhir','KM_Awal','KM_Akhir','Jumlah_KM','Jam_Kerja_Awal','Jam_Kerja_Akhir','Jam_Kerja','W','S','R','Kategori_BD','Operator','Fuel_Ltr','Kegiatan'],
-    body.dailyLogs, function(r){ return [r.tanggal,r.unitId,r.hmAwal,r.hmAkhir,r.kmAwal,r.kmAkhir,r.jumlahKm,r.jamKerjaAwal,r.jamKerjaAkhir,r.jamKerja,r.w,r.s,r.r,r.kategori,r.operator,r.fuelLtr,r.kegiatan]; });
+    ['Tanggal','Unit_ID','HM_Awal','HM_Akhir','KM_Awal','KM_Akhir','Jumlah_KM','Jam_Kerja_Awal','Jam_Kerja_Akhir','Jam_Kerja','W','S','R','Kategori_BD','Operator','Kegiatan'],
+    body.dailyLogs, function(r){ return [r.tanggal,r.unitId,r.hmAwal,r.hmAkhir,r.kmAwal,r.kmAkhir,r.jumlahKm,r.jamKerjaAwal,r.jamKerjaAkhir,r.jamKerja,r.w,r.s,r.r,r.kategori,r.operator,r.kegiatan]; });
 
   if (body.tyres) upsertSheet('Tyre_Position',
     ['Unit_ID','Axle_No','Side','Position','Tyre_ID','Brand','Model','Size','Date_Installed','Lifetime_Hours','Jam_Terpakai'],
@@ -3410,9 +3457,57 @@ function svgWheelMarker(x, y, t, r=16){
     <text x="${x}" y="${y+4}" text-anchor="middle" font-size="9" font-weight="700" fill="#0a0e17">${t.tyreId?escapeHtml(t.code):'+'}</text>
   </g>`;
 }
+function tyreMapLegendHtml(){
+  return `<div style="display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap;font-size:10.5px;color:var(--text-dim);">
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3ddc97;margin-right:4px;"></span>Sehat</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffd166;margin-right:4px;"></span>Inspeksi</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff5c72;margin-right:4px;"></span>Akhir Umur</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3a4256;margin-right:4px;"></span>Kosong</span>
+    </div>`;
+}
+// Peta top-view khusus 12R: 8x4 twin-steer (A1,A2) + tandem drive dual (A3,A4) — mengikuti tata letak diagram referensi site.
+function generateTruckMap8x4(unit, cfg, byCode){
+  const W = 300, H = 560;
+  const axleY = {1:110, 2:180, 3:340, 4:430};
+  let body = '';
+  body += `<text x="${W/2}" y="14" text-anchor="middle" font-size="11" fill="#8b96ad" font-weight="700">${escapeHtml(unit.id)} — 12R (8x4)</text>`;
+  // kabin
+  body += `<rect x="115" y="24" width="70" height="58" rx="10" fill="none" stroke="rgba(140,155,180,.4)" stroke-width="2"/>`;
+  body += `<rect x="127" y="34" width="46" height="20" rx="4" fill="rgba(140,155,180,.15)"/>`;
+  // chassis rails
+  body += `<line x1="132" y1="82" x2="132" y2="460" stroke="rgba(140,155,180,.32)" stroke-width="3"/>`;
+  body += `<line x1="168" y1="82" x2="168" y2="460" stroke="rgba(140,155,180,.32)" stroke-width="3"/>`;
+  // axle bars
+  [1,2,3,4].forEach(ax=>{
+    const y = axleY[ax], isDrive = ax>=3;
+    const xs = isDrive ? 50 : 90, xe = isDrive ? 250 : 210;
+    body += `<line x1="${xs}" y1="${y}" x2="${xe}" y2="${y}" stroke="rgba(140,155,180,.3)" stroke-width="4" stroke-linecap="round"/>`;
+  });
+  // label kelompok axle (kiri)
+  const axleLabel = (y,l1,l2)=>`<text x="6" y="${y-4}" font-size="9" fill="#8b96ad" font-weight="800">${l1}</text><text x="6" y="${y+9}" font-size="7" fill="#5c6684" font-weight="700">${l2}</text>`;
+  body += axleLabel(axleY[1], 'A1', 'STEER');
+  body += axleLabel(axleY[2], 'A2', 'STEER');
+  body += axleLabel(axleY[3], 'A3', 'DRIVE');
+  body += axleLabel(axleY[4], 'A4', 'DRIVE');
+  // roda
+  cfg.positions.forEach(pos=>{
+    const t = byCode[pos.code]; if(!t) return;
+    const y = axleY[pos.axle];
+    const isLeft = (pos.side||'').startsWith('Left');
+    const isInner = (pos.side||'').includes('Inner');
+    const isOuter = (pos.side||'').includes('Outer');
+    let x;
+    if(isInner) x = isLeft ? 95 : 205;
+    else if(isOuter) x = isLeft ? 42 : 258;
+    else x = isLeft ? 72 : 228; // roda tunggal steer (A1/A2)
+    body += svgWheelMarker(x, y, t, 15);
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:300px;display:block;margin:0 auto;">${body}</svg>` + tyreMapLegendHtml();
+}
 function generateTyreMapSVG(unit){
   const cfg = WHEEL_CONFIGS[unit.wheelConfig];
   const byCode = {}; state.tyres.filter(t=>t.unitId===unit.id).forEach(t=>byCode[t.code]=t);
+  if(unit.wheelConfig === '12R') return generateTruckMap8x4(unit, cfg, byCode);
   const W = 260, H = 380;
   let body = '';
   // chassis outline
@@ -3422,7 +3517,6 @@ function generateTyreMapSVG(unit){
     '4R': {1:70, 2:H-70},
     '6R': {1:70, 2:H-70},
     '10R': {1:60, 2:H/2-10, 3:H-60},
-    '12R': {1:55, 2:H/2-60, 3:H/2+40, 4:H-45},
   }[unit.wheelConfig];
   cfg.positions.forEach(pos=>{
     const t = byCode[pos.code]; if(!t) return;
@@ -3438,13 +3532,7 @@ function generateTyreMapSVG(unit){
     else { x = isLeft ? 55 : 205; } // simple Left/Right single (4R/front)
     body += svgWheelMarker(x, y, t);
   });
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:280px;display:block;margin:0 auto;">${body}</svg>
-    <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap;font-size:10.5px;color:var(--text-dim);">
-      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3ddc97;margin-right:4px;"></span>Sehat</span>
-      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffd166;margin-right:4px;"></span>Inspeksi</span>
-      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff5c72;margin-right:4px;"></span>Akhir Umur</span>
-      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3a4256;margin-right:4px;"></span>Kosong</span>
-    </div>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:280px;display:block;margin:0 auto;">${body}</svg>` + tyreMapLegendHtml();
 }
 function openTyreModalForPosition(unitId, code){
   const t = state.tyres.find(x=>x.unitId===unitId && x.code===code);
@@ -3842,20 +3930,26 @@ function renderWorkorderTable(){
   document.getElementById('woTableBody').innerHTML = rows.map(w=>{
     const rowCls = (w.ltEffective!==null && w.ltEffective>14 && w.status!=='Completed') ? 'row-crit' : '';
     return `<tr class="${rowCls}">
-      <td>${fmtDate(w.tanggal)}</td><td><b>${escapeHtml(w.unitId)}</b></td><td>${escapeHtml(w.driver||'—')}</td>
+      <td class="sticky-col"><b>${escapeHtml(w.unitId)}</b><div style="font-size:10.5px;color:var(--text-dim);font-weight:400;">${fmtDate(w.tanggal)}</div></td>
+      <td>${escapeHtml(w.driver||'—')}</td>
       <td><span class="badge ${w.statusUnit==='BD'?'b-red':'b-green'}">${escapeHtml(w.statusUnit)}</span></td>
       <td>${escapeHtml(w.partName||'—')}</td><td><span class="badge b-blue">${escapeHtml(w.category)}</span></td>
-      <td>${w.tglKejadian?fmtDate(w.tglKejadian):'—'}</td><td>${w.tglFPB?fmtDate(w.tglFPB):'—'}</td><td>${w.tglPO?fmtDate(w.tglPO):'—'}</td>
-      <td>${w.tglKirim?fmtDate(w.tglKirim):'—'}</td><td>${w.tglTerima?fmtDate(w.tglTerima):'—'}</td>
-      <td>${w.tglMulai?fmtDate(w.tglMulai):'—'}</td><td>${w.tglSelesai?fmtDate(w.tglSelesai):'—'}</td>
+      <td>${w.tglKejadian?fmtDate(w.tglKejadian):'—'}</td>
+      <td data-col="fpb">${w.tglFPB?fmtDate(w.tglFPB):'—'}</td>
+      <td data-col="po">${w.tglPO?fmtDate(w.tglPO):'—'}</td>
+      <td data-col="kirim">${w.tglKirim?fmtDate(w.tglKirim):'—'}</td>
+      <td data-col="terima">${w.tglTerima?fmtDate(w.tglTerima):'—'}</td>
+      <td data-col="mulai">${w.tglMulai?fmtDate(w.tglMulai):'—'}</td>
+      <td>${w.tglSelesai?fmtDate(w.tglSelesai):'—'}</td>
       <td>${w.ltTotal!==null?fmtNum(w.ltTotal,1):(w.ltEffective!==null?fmtNum(w.ltEffective,1)+' (berjalan)':'—')}</td>
       <td><span class="badge ${statusCls[w.status]}">${w.status}</span></td>
-      <td>
+      <td class="sticky-col-right">
         <button class="btn btn-ghost btn-sm" onclick="openWorkorderModal('${w.id}')">✏️</button>
         ${perms.crud?`<button class="btn btn-danger btn-sm" onclick="deleteWorkorder('${w.id}')">🗑️</button>`:''}
       </td>
     </tr>`;
-  }).join('') || `<tr><td colspan="16" style="text-align:center;color:var(--text-dim);padding:24px;">Belum ada workorder sesuai filter.</td></tr>`;
+  }).join('') || `<tr><td colspan="15" style="text-align:center;color:var(--text-dim);padding:24px;">Belum ada workorder sesuai filter.</td></tr>`;
+  loadColPrefs('woTableWrap','woColPanel');
   renderWoChart(); renderWoInsights();
 }
 document.addEventListener('click', (e)=>{
@@ -4182,18 +4276,7 @@ function renderFuelInsights(){
     const last = fuelUnitLatest(u.id); if(!last) return;
     if(last.stockAkhir < minStock) html += `<div class="insight-item crit"><div class="dot"></div><div><b>${escapeHtml(u.id)}</b>: stock BBM tersisa ${fmtNum(last.stockAkhir,1)} Ltr (per ${fmtDate(last.tanggal)}) — di bawah ambang kritis ${fmtNum(minStock,0)} Ltr. Segera jadwalkan pengisian.</div></div>`;
   });
-  // Cross-check konsistensi dengan Input Harian: fuelOut fuel log vs fuelLtr daily log yang berbeda jauh
-  const mismatches = [];
-  state.fuelLogs.forEach(f=>{
-    const ref = getDailyRef(f.unitId, f.tanggal);
-    if(ref && ref.fuelLtr>0 && Math.abs(ref.fuelLtr - f.fuelOut) > Math.max(5, ref.fuelLtr*0.15)){
-      mismatches.push({f, ref});
-    }
-  });
-  mismatches.slice(0,3).forEach(({f,ref})=>{
-    html += `<div class="insight-item warn"><div class="dot"></div><div><b>${escapeHtml(f.unitId)}</b> (${fmtDate(f.tanggal)}): Fuel Out di Fuel Management (${fmtNum(f.fuelOut,1)} Ltr) berbeda jauh dari Fuel tercatat di Input Harian (${fmtNum(ref.fuelLtr,1)} Ltr) — periksa konsistensi input di kedua modul.</div></div>`;
-  });
-  document.getElementById('fuelInsights').innerHTML = html || `<div class="insight-item ok"><div class="dot"></div><div>Tidak ada stock kritis maupun ketidaksesuaian data fuel yang terdeteksi saat ini.</div></div>`;
+  document.getElementById('fuelInsights').innerHTML = html || `<div class="insight-item ok"><div class="dot"></div><div>Tidak ada stock kritis yang terdeteksi saat ini.</div></div>`;
 }
 function onFuelFormChange(){
   const unitId = document.getElementById('fuelUnitId').value;
@@ -4205,17 +4288,16 @@ function onFuelFormChange(){
   const ref = getDailyRef(unitId, tanggal);
   const banner = document.getElementById('fuelDailyRefBanner');
   if(ref){
-    banner.innerHTML = `<b>🔗 Relasi Input Harian ditemukan:</b>&nbsp;Jam Kerja ${fmtNum(ref.jamKerja||0,1)} jam, Kegiatan: "${escapeHtml(ref.kegiatan||'-')}" , Fuel tercatat: ${fmtNum(ref.fuelLtr||0,1)} Ltr.
-      ${!editId?` <button class="btn btn-ghost btn-sm" style="margin-left:6px;" onclick="applyDailyRefToFuel()">Gunakan nilai ini →</button>`:''}`;
+    banner.innerHTML = `<b>🔗 Relasi Input Harian ditemukan:</b>&nbsp;Jam Kerja ${fmtNum(ref.jamKerja||0,1)} jam, Kegiatan: "${escapeHtml(ref.kegiatan||'-')}".
+      ${!editId?` <button class="btn btn-ghost btn-sm" style="margin-left:6px;" onclick="applyDailyRefToFuel()">Gunakan Operator & Kegiatan ini →</button>`:''}`;
   } else {
-    banner.innerHTML = `<b>ℹ️ Tidak ditemukan data Input Harian</b> untuk unit & tanggal ini — Fuel Out akan diisi manual tanpa referensi jam kerja/kegiatan otomatis.`;
+    banner.innerHTML = `<b>ℹ️ Tidak ditemukan data Input Harian</b> untuk unit & tanggal ini — isi Operator/Kegiatan manual jika perlu.`;
   }
   updateFuelCalc();
 }
 function applyDailyRefToFuel(){
   const unitId = document.getElementById('fuelUnitId').value, tanggal = document.getElementById('fuelTanggal').value;
   const ref = getDailyRef(unitId, tanggal); if(!ref) return;
-  document.getElementById('fuelOut').value = ref.fuelLtr || 0;
   document.getElementById('fuelOperator').value = ref.operator || '';
   document.getElementById('fuelKegiatan').value = ref.kegiatan || '';
   updateFuelCalc();
@@ -4619,7 +4701,7 @@ function exportDailyExcel(){
     Tanggal:l.tanggal, Unit_ID:l.unitId, HM_Awal:l.hmAwal, HM_Akhir:l.hmAkhir,
     KM_Awal:l.kmAwal||0, KM_Akhir:l.kmAkhir||0, Jumlah_KM:l.jumlahKm||0,
     Jam_Kerja_Awal:l.jamKerjaAwal||'', Jam_Kerja_Akhir:l.jamKerjaAkhir||'', Jam_Kerja:l.jamKerja||0,
-    W:l.w, S:l.s, R:l.r, Kategori_BD:l.kategori, 'Operator/Driver':l.operator||'', Fuel_Ltr:l.fuelLtr||0, Kegiatan:l.kegiatan||'',
+    W:l.w, S:l.s, R:l.r, Kategori_BD:l.kategori, 'Operator/Driver':l.operator||'', Kegiatan:l.kegiatan||'',
     'PA%':m.pa.toFixed(1), 'MA%':m.ma.toFixed(1), 'UA%':m.ua.toFixed(1), 'EU%':m.eu.toFixed(1) }; }), 'Data_Harian', 'Data_Harian.xlsx');
 }
 
