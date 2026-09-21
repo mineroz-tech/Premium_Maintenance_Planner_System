@@ -340,6 +340,30 @@ th.hcol,td.hcol{display:none !important;}
 .chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);}
 .chat-input input{flex:1;padding:9px 12px;border-radius:9px;border:1px solid var(--border-strong);background:rgba(255,255,255,.03);color:var(--text);font-size:12.5px;outline:none;}
 
+/* Quick-Add floating button (global, accessible from any page) */
+#quickAddFab{position:fixed;bottom:22px;right:88px;width:52px;height:52px;border-radius:50%;z-index:150;
+  background:linear-gradient(135deg,var(--amber),#e59a2c);display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:800;box-shadow:0 8px 24px rgba(255,181,69,.4);border:none;color:#26160a;line-height:1;}
+#quickAddFab:hover{filter:brightness(1.08);}
+#quickAddPanel{position:fixed;bottom:82px;right:88px;width:250px;z-index:150;padding:8px;display:none;}
+#quickAddPanel.open{display:block;}
+.quickadd-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;font-weight:700;padding:6px 10px 8px;}
+.quickadd-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--text);}
+.quickadd-item:hover{background:rgba(255,255,255,.06);}
+.quickadd-item .ic{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+
+/* Input Terpadu hub cards */
+.hub-card{padding:18px;display:flex;flex-direction:column;gap:10px;transition:.15s;}
+.hub-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.35);}
+.hub-card .hub-top{display:flex;align-items:center;gap:12px;}
+.hub-card .hub-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(61,139,253,.14);color:var(--steel-2);flex-shrink:0;}
+.hub-card .hub-title{font-size:14px;font-weight:800;}
+.hub-card .hub-desc{font-size:11.5px;color:var(--text-dim);line-height:1.5;}
+.hub-card .hub-stat{font-size:20px;font-weight:800;margin-top:2px;}
+.hub-card .hub-stat-label{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;}
+.hub-activity-item{display:flex;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);font-size:12px;align-items:center;}
+.hub-activity-item .t{color:var(--text-faint);font-size:10.5px;white-space:nowrap;}
+
 /* Toast */
 #toastWrap{position:fixed;top:16px;right:16px;z-index:400;display:flex;flex-direction:column;gap:8px;}
 .toast{padding:12px 16px;border-radius:10px;font-size:12.5px;font-weight:600;min-width:230px;animation:toastin .25s ease;}
@@ -838,6 +862,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     <div class="nav-scroll">
       <div class="nav-section-label">Utama</div>
       <div class="nav-item active" data-page="dashboard"><span class="ic">📊</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" data-page="hub"><span class="ic">⚡</span><span class="nav-label">Input Terpadu</span></div>
       <div class="nav-item" data-page="populasi"><span class="ic">🚛</span><span class="nav-label">Populasi Unit</span></div>
       <div class="nav-item" data-page="input"><span class="ic">📝</span><span class="nav-label">Input Data</span></div>
       <div class="nav-section-label">Analisis</div>
@@ -925,6 +950,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           </div>
         </div>
         <div class="footer-brand glass" style="margin-top:18px;"></div>
+      </div>
+
+      <!-- ============ INPUT TERPADU (HUB) ============ -->
+      <div class="page" id="page-hub">
+        <div class="page-head">
+          <div>
+            <div class="page-title">⚡ Input Terpadu</div>
+            <div class="page-sub">Satu tempat untuk semua input data — klik kartu untuk langsung menambah data tanpa pindah halaman</div>
+          </div>
+        </div>
+        <div class="banner info">
+          <b>💡 Tips:</b>&nbsp;Tombol <b>"+"</b> mengambang di pojok kanan bawah (di semua halaman) juga membuka form-form yang sama secara instan — pilih mana yang lebih nyaman untuk rutinitas harian Anda.
+        </div>
+        <div class="grid g-3" id="hubCards" style="margin-top:16px;"></div>
+        <div class="glass card" style="margin-top:16px;">
+          <div class="panel-head"><div class="panel-title"><span class="ic">🕓</span>Aktivitas Input Terbaru (Semua Modul)</div></div>
+          <div id="hubActivityList"></div>
+        </div>
       </div>
 
       <!-- ============ POPULASI UNIT ============ -->
@@ -1615,6 +1658,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
         <div class="guide-toc">
           <a href="#g-mulai">🚀 Mulai Cepat</a>
+          <a href="#g-hub">⚡ Input Terpadu</a>
           <a href="#g-navigasi">🧭 Navigasi Umum</a>
           <a href="#g-populasi">🚛 Populasi Unit</a>
           <a href="#g-input">📝 Input Data Harian</a>
@@ -1640,6 +1684,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
             <div class="guide-step"><div class="num">3</div><div class="txt">Aplikasi otomatis terisi <b>data sampel</b> (unit, data harian, ban, konfigurasi service) supaya semua fitur langsung bisa dicoba. Data ini ditandai jelas dengan banner "Data Sampel" — ganti bertahap dengan data asli site Anda lewat menu <b>Populasi Unit</b> dan <b>Input Data</b>.</div></div>
             <div class="guide-step"><div class="num">4</div><div class="txt">Semua perubahan (tambah/edit/hapus data) otomatis tersimpan ke <b>localStorage browser</b> — akan tetap ada saat file dibuka lagi di browser & komputer yang sama, tanpa perlu simpan manual.</div></div>
             <div class="banner" style="margin-top:14px;"><b>⚠️ Penting:</b>&nbsp;Karena data tersimpan di localStorage <i>browser ini saja</i>, membuka file di komputer/browser lain akan menampilkan data sampel awal lagi (bukan data yang sudah Anda input). Gunakan fitur Export Excel/PDF secara berkala sebagai backup, atau isi <b>Webhook Sync</b> di tab API/IoT bila ingin sinkronisasi ke server sendiri.</div>
+          </div>
+        </details>
+
+        <details class="guide-acc" id="g-hub">
+          <summary><span><span class="gi">⚡</span>Input Terpadu — Satu Tempat untuk Semua Input</span><span class="arrow">▾</span></summary>
+          <div class="guide-body">
+            <div class="guide-step"><div class="num">1</div><div class="txt">Tab <b>⚡ Input Terpadu</b> (tepat di bawah Dashboard) adalah "meja kerja" harian admin — berisi kartu untuk tiap jenis input (Unit, Data Harian, Ban, Workorder, Fuel, Fuel Storage, Service Config, Inspeksi Ban), lengkap dengan angka ringkas (mis. "Entri Hari Ini", "WO Aktif") supaya langsung kelihatan apa yang perlu dikerjakan.</div></div>
+            <div class="guide-step"><div class="num">2</div><div class="txt">Klik tombol di kartu manapun untuk langsung membuka form input yang sama seperti di halaman aslinya — tidak perlu pindah tab dulu.</div></div>
+            <div class="guide-step"><div class="num">3</div><div class="txt">Panel <b>Aktivitas Input Terbaru</b> di bawah kartu menampilkan riwayat tambah/import data dari <i>semua modul</i> dalam satu daftar — cara cepat mengecek apa saja yang baru diinput hari ini.</div></div>
+            <div class="guide-step"><div class="num">4</div><div class="txt">Tombol <b>"+" kuning mengambang</b> di pojok kanan bawah tersedia di <i>semua halaman</i> — klik untuk membuka menu pintasan ke semua form input tanpa perlu ke tab Input Terpadu maupun tab aslinya sama sekali.</div></div>
           </div>
         </details>
 
@@ -2064,6 +2118,17 @@ MTTR = Total Waktu Perbaikan ÷ Jumlah Failure</div>
 </div>
 
 <!-- ============ CHATBOT ============ -->
+<button id="quickAddFab" onclick="toggleQuickAdd()" title="Tambah Data Cepat">＋</button>
+<div class="glass" id="quickAddPanel">
+  <div class="quickadd-label">Tambah Data Cepat</div>
+  <div class="quickadd-item" onclick="closeQuickAdd(); openUnitModal();"><span class="ic">🚛</span> Tambah Unit</div>
+  <div class="quickadd-item" onclick="closeQuickAdd(); openQuickInput();"><span class="ic">📝</span> Input Harian</div>
+  <div class="quickadd-item" onclick="closeQuickAdd(); openTyreModal();"><span class="ic">⚫</span> Tambah/Edit Ban</div>
+  <div class="quickadd-item" onclick="closeQuickAdd(); openTyreLogModal();"><span class="ic">🧰</span> Catat Inspeksi Ban</div>
+  <div class="quickadd-item" onclick="closeQuickAdd(); openWorkorderModal();"><span class="ic">🧾</span> Workorder Baru</div>
+  <div class="quickadd-item" onclick="closeQuickAdd(); openFuelModal();"><span class="ic">⛽</span> Input Fuel Harian</div>
+  <div class="quickadd-item" onclick="closeQuickAdd(); openFuelStorageModal();"><span class="ic">🛢️</span> Pengiriman BBM (Storage)</div>
+</div>
 <button id="chatFab" onclick="toggleChat()">🤖</button>
 <div class="glass" id="chatPanel">
   <div class="chat-head"><div><b>MPS Assistant</b><br><span>Rekomendasi service & analisis cepat</span></div><button class="modal-close" onclick="toggleChat()">✕</button></div>
@@ -4774,6 +4839,35 @@ function renderDashboard(){
   document.getElementById('dashInsights').innerHTML = html || `<div class="insight-item ok"><div class="dot"></div><div>Seluruh indikator fleet dalam kondisi baik pada periode ini.</div></div>`;
   document.querySelector('.footer-brand').innerHTML = brandFooterHtml();
 }
+/* ================= INPUT TERPADU (HUB) ================= */
+function renderHub(){
+  const today = todayStr();
+  const dailyToday = state.dailyLogs.filter(l=>l.tanggal===today).length;
+  const fuelToday = state.fuelLogs.filter(f=>f.tanggal===today).length;
+  const activeWo = state.workorders.filter(w=>woStatus(w)!=='Completed').length;
+  const cards = [
+    { icon:'🚛', title:'Populasi Unit', desc:'Tambah/edit master data unit fleet — Type, Model, Merk, Konfigurasi Roda.', stat: state.units.length, statLabel:'Total Unit', action:"openUnitModal()", btn:'+ Tambah Unit' },
+    { icon:'📝', title:'Input Data Harian', desc:'HM, KM, jam kerja, dan breakdown harian per unit.', stat: dailyToday, statLabel:'Entri Hari Ini', action:"openQuickInput()", btn:'+ Input Harian' },
+    { icon:'⚫', title:'Tyre Management', desc:'Pasang/ganti ban, catat inspeksi tread & tekanan.', stat: installedTyres().length, statLabel:'Ban Terpasang', action:"openTyreModal()", btn:'+ Tambah/Edit Ban' },
+    { icon:'🧾', title:'Workorder', desc:'Catat breakdown baru & tracking leadtime part.', stat: activeWo, statLabel:'WO Aktif', action:"openWorkorderModal()", btn:'+ Workorder Baru' },
+    { icon:'⛽', title:'Fuel Harian', desc:'Input Fuel In/Out per unit — terhubung ke Input Harian.', stat: fuelToday, statLabel:'Entri Hari Ini', action:"openFuelModal()", btn:'+ Input Fuel' },
+    { icon:'🛢️', title:'Fuel Storage', desc:'Catat pengiriman BBM ke tangki induk dari supplier.', stat: fmtNum(currentStorageStock(),0)+' Ltr', statLabel:'Stock Saat Ini', action:"openFuelStorageModal()", btn:'+ Catat Pengiriman' },
+    { icon:'🗓️', title:'Service Config', desc:'Atur interval service & standar life component fleet.', stat: state.serviceConfig.length, statLabel:'Komponen Terdaftar', action:"openServiceConfigModal()", btn:'⚙️ Buka Konfigurasi' },
+    { icon:'🧰', title:'Inspeksi Ban', desc:'Catat tread depth, tekanan, cut/crack, dan tindakan.', stat: state.tyreLogs.length, statLabel:'Total Log', action:"openTyreLogModal()", btn:'+ Catat Inspeksi' },
+  ];
+  document.getElementById('hubCards').innerHTML = cards.map(c=>`
+    <div class="glass hub-card">
+      <div class="hub-top"><div class="hub-icon">${c.icon}</div><div><div class="hub-title">${c.title}</div></div></div>
+      <div class="hub-desc">${c.desc}</div>
+      <div><div class="hub-stat">${c.stat}</div><div class="hub-stat-label">${c.statLabel}</div></div>
+      <button class="btn btn-primary btn-sm" style="margin-top:4px;" onclick="${c.action}">${c.btn}</button>
+    </div>`).join('');
+  const recent = state.auditLog.filter(a=>/^(ADD_|IMPORT_)/.test(a.action)).slice(0,10);
+  document.getElementById('hubActivityList').innerHTML = recent.map(a=>`
+    <div class="hub-activity-item"><div class="t">${new Date(a.ts).toLocaleString('id-ID')}</div>
+    <div><span class="badge b-blue" style="margin-right:6px;">${a.action}</span>${escapeHtml(a.detail)}</div></div>`).join('') ||
+    `<div class="kpi-note" style="padding:16px;">Belum ada aktivitas input tercatat.</div>`;
+}
 function brandFooterHtml(){
   return `<div class="fl"><div class="flogo">MZ</div><div><div class="fname">Mineroz</div><div class="ftag">Data Mining Consultant — Premium Maintenance Planner System</div></div></div>
   <div class="socials">
@@ -4784,6 +4878,7 @@ function brandFooterHtml(){
 function renderPage(page){
   refreshUnitDropdowns();
   if(page==='dashboard') renderDashboard();
+  else if(page==='hub') renderHub();
   else if(page==='populasi'){ populateUnitFilterOptions(); renderUnitsTable(); }
   else if(page==='input'){ renderDailyTable(); }
   else if(page==='performance') renderPerformance();
@@ -4799,6 +4894,7 @@ function renderPage(page){
 }
 function renderAll(){
   renderDashboard();
+  renderHub();
   populateUnitFilterOptions(); renderUnitsTable();
   fillSelect('fDailyKategori', BD_CATEGORIES); renderDailyTable();
   renderPerformance(); renderReliability(); renderPareto();
@@ -4812,6 +4908,12 @@ function renderAll(){
 
 /* ================= CHATBOT (rule-based, offline) ================= */
 const CHAT_QUICK = ['Unit performa rendah?','Rekomendasi service prioritas','Kategori breakdown terbesar?','Ban perlu diganti?'];
+/* ---- Quick-Add floating menu (global, tersedia di semua halaman) ---- */
+function toggleQuickAdd(){ document.getElementById('quickAddPanel').classList.toggle('open'); }
+function closeQuickAdd(){ document.getElementById('quickAddPanel').classList.remove('open'); }
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('#quickAddFab') && !e.target.closest('#quickAddPanel')){ closeQuickAdd(); }
+});
 function toggleChat(){
   const panel = document.getElementById('chatPanel');
   panel.classList.toggle('open');
