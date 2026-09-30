@@ -384,6 +384,18 @@ code.inline{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:5px;f
   .sidebar.mobile-open{left:0;}
   .content{padding:14px;}
 }
+.tp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+.tp-card{padding:16px;display:flex;flex-direction:column;gap:6px;}
+.tp-card .tp-num{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;}
+.tp-card .tp-sub{font-size:11.5px;color:var(--text-dim);min-height:16px;}
+.tp-card .tp-act{display:flex;gap:6px;margin-top:6px;}
+.tp-feed-item{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid var(--border);margin-bottom:6px;font-size:12.5px;cursor:pointer;}
+.tp-feed-item .tp-d{margin-left:auto;color:var(--text-faint);font-size:11px;white-space:nowrap;}
+#quickFab{position:fixed;bottom:22px;right:90px;width:56px;height:56px;border-radius:50%;z-index:150;border:none;font-size:30px;font-weight:700;line-height:1;color:#26160a;background:linear-gradient(135deg,var(--amber),#e59a2c);box-shadow:0 8px 26px rgba(255,181,69,.4);}
+#quickMenu{position:fixed;bottom:90px;right:90px;z-index:150;display:none;flex-direction:column;gap:4px;padding:8px;min-width:200px;}
+#quickMenu.open{display:flex;}
+#quickMenu button{text-align:left;padding:9px 12px;border-radius:8px;border:none;background:transparent;color:var(--text);font-size:13px;font-weight:600;}
+#quickMenu button:hover{background:rgba(255,255,255,.08);}
 </style>
 </head>
 <body>
@@ -829,6 +841,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     <div class="nav-scroll">
       <div class="nav-section-label">Utama</div>
       <div class="nav-item active" data-page="dashboard"><span class="ic">📊</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" data-page="terpadu"><span class="ic">⚡</span><span class="nav-label">Input Terpadu</span></div>
       <div class="nav-item" data-page="populasi"><span class="ic">🚛</span><span class="nav-label">Populasi Unit</span></div>
       <div class="nav-item" data-page="input"><span class="ic">📝</span><span class="nav-label">Input Data</span></div>
       <div class="nav-section-label">Analisis</div>
@@ -920,6 +933,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       </div>
 
       <!-- ============ POPULASI UNIT ============ -->
+      <div class="page" id="page-terpadu">
+        <div class="page-head"><div><div class="page-title">⚡ Input Terpadu</div><div class="page-sub">Pusat semua form input — lihat apa yang perlu dikerjakan hari ini, lalu langsung input</div></div></div>
+        <div class="tp-grid" id="tpCards"></div>
+        <div class="glass card" style="margin-top:16px;"><div class="kpi-label" style="margin-bottom:10px;">Aktivitas Input Terbaru</div><div id="tpFeed"></div></div>
+      </div>
+
       <div class="page" id="page-populasi">
         <div class="page-head">
           <div>
@@ -2076,6 +2095,8 @@ MTTR = Total Waktu Perbaikan ÷ Jumlah Failure</div>
 </div>
 
 <!-- ============ CHATBOT ============ -->
+<button id="quickFab" onclick="toggleQuick()" title="Input cepat">＋</button>
+<div class="glass" id="quickMenu"></div>
 <button id="chatFab" onclick="toggleChat()">🤖</button>
 <div class="glass" id="chatPanel">
   <div class="chat-head"><div><b>MPS Assistant</b><br><span>Rekomendasi service & analisis cepat</span></div><button class="modal-close" onclick="toggleChat()">✕</button></div>
@@ -2816,6 +2837,7 @@ function saveUnit(){
   } else {
     if(state.units.some(x=>x.id===id)){ toast('Unit ID sudah ada.', 'err'); return; }
     unitRef = {id,type,model,merk,tahun,lokasi,lastHm:0,wheelConfig};
+    if(!unitRef.createdAt) unitRef.createdAt=todayStr();
     state.units.push(unitRef);
     logAudit('ADD_UNIT', `Unit baru ditambahkan: ${id}`);
     toast('Unit baru berhasil ditambahkan.', 'ok');
@@ -4879,6 +4901,7 @@ function brandFooterHtml(){
 }
 
 function renderPage(page){
+  if(page==='terpadu') renderTerpadu();
   refreshUnitDropdowns();
   if(page==='dashboard') renderDashboard();
   else if(page==='populasi'){ populateUnitFilterOptions(); renderUnitsTable(); }
@@ -4895,7 +4918,7 @@ function renderPage(page){
   else if(page==='apiint'){ renderApiPage(); loadGasConfig(); }
 }
 function renderAll(){
-  renderDashboard();
+  renderDashboard(); renderTerpadu();
   populateUnitFilterOptions(); renderUnitsTable();
   fillSelect('fDailyKategori', BD_CATEGORIES); renderDailyTable();
   renderPerformance(); renderReliability(); renderPareto();
@@ -4905,6 +4928,60 @@ function renderAll(){
   renderFuelTable();
   renderReports(); renderAudit(); renderApiPage();
   updateSyncUI();
+}
+
+
+/* ================= INPUT TERPADU + TOMBOL + MENGAMBANG ================= */
+const QUICK_FORMS = [
+  {k:'unit',   ic:'🚛', name:'Unit',           page:'populasi',  open:()=>openUnitModal()},
+  {k:'daily',  ic:'📝', name:'Data Harian',    page:'input',     open:()=>openDailyModal()},
+  {k:'tyre',   ic:'⚫', name:'Ban',            page:'tyre',      open:()=>openTyreModal()},
+  {k:'wo',     ic:'🧾', name:'Workorder',      page:'workorder', open:()=>openWorkorderModal()},
+  {k:'fuel',   ic:'⛽', name:'Fuel Harian',    page:'fuel',      open:()=>openFuelModal()},
+  {k:'fstore', ic:'🛢️', name:'Fuel Storage',   page:'fuel',      open:()=>openFuelStorageModal()},
+  {k:'svc',    ic:'🗓️', name:'Service Config', page:'service',   open:()=>openServiceConfigModal()},
+  {k:'tlog',   ic:'🔍', name:'Inspeksi Ban',   page:'tyre',      open:()=>openTyreLogModal()},
+];
+function quickOpen(k){
+  if(!currentPerms().crud){ toast('Role Anda tidak punya izin input data','warn'); return; }
+  const f=QUICK_FORMS.find(x=>x.k===k); document.getElementById('quickMenu').classList.remove('open'); f.open();
+}
+function goPage(pg){ document.querySelector(`.nav-item[data-page="${pg}"]`).click(); }
+function toggleQuick(){
+  const m=document.getElementById('quickMenu');
+  m.innerHTML = QUICK_FORMS.map(f=>`<button onclick="quickOpen('${f.k}')">${f.ic}&nbsp; ${f.name}</button>`).join('');
+  m.classList.toggle('open');
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('#quickMenu,#quickFab')) document.getElementById('quickMenu').classList.remove('open'); });
+function tpStats(){
+  const t=todayStr(), wk=daysAgoStr(7), mo=t.slice(0,7);
+  const wo=state.workorders.filter(w=>woStatus(w)!=='Completed');
+  const fs=state.fuelStorageLogs.filter(x=>(x.tanggal||'').slice(0,7)===mo);
+  const nT=x=>state.dailyLogs.filter(l=>l.tanggal===t).length;
+  return {
+    unit:  [state.units.length,'Total Unit'],
+    daily: [state.dailyLogs.filter(l=>l.tanggal===t).length,'Entri Hari Ini'],
+    tyre:  [state.tyres.filter(x=>x.tyreId).length,'Ban Terpasang'],
+    wo:    [wo.length,'WO Aktif (belum selesai)'],
+    fuel:  [state.fuelLogs.filter(l=>l.tanggal===t).length,'Entri Hari Ini'],
+    fstore:[fs.length,'Pengiriman Bulan Ini · '+fmtInt(fs.reduce((a,x)=>a+(+x.fuelIn||0),0))+' Ltr'],
+    svc:   [state.serviceConfig.length,'Komponen Terkonfigurasi'],
+    tlog:  [state.tyreLogs.filter(l=>l.tanggal>=wk).length,'Inspeksi 7 Hari Terakhir'],
+  };
+}
+function renderTerpadu(){
+  const box=document.getElementById('tpCards'); if(!box) return;
+  const st=tpStats();
+  box.innerHTML=QUICK_FORMS.map(f=>`<div class="glass tp-card"><div class="kpi-label">${f.ic} ${f.name}</div><div class="tp-num">${fmtInt(st[f.k][0])}</div><div class="tp-sub">${st[f.k][1]}</div><div class="tp-act"><button class="btn btn-primary btn-sm" onclick="quickOpen('${f.k}')">＋ Input</button><button class="btn btn-ghost btn-sm" onclick="goPage('${f.page}')">Buka Tab</button></div></div>`).join('');
+  const it=[], add=(arr,ic,pg,fn)=>arr.forEach(r=>{ const d=fn.d(r); if(d) it.push({d,ic,pg,txt:fn.t(r)}); });
+  add(state.units.slice(-10).reverse(),'🚛','populasi',{d:r=>r.createdAt,t:r=>`Unit <b>${escapeHtml(r.id)}</b> ditambahkan`});
+  add(state.dailyLogs.slice(-10).reverse(),'📝','input',{d:r=>r.tanggal,t:r=>`Data harian <b>${escapeHtml(r.unitId)}</b>`});
+  add(state.tyreLogs.slice(0,10),'🔍','tyre',{d:r=>r.tanggal,t:r=>`Inspeksi ban <b>${escapeHtml(r.tyreId)}</b>`});
+  add(state.workorders.slice(-10).reverse(),'🧾','workorder',{d:r=>r.tanggal,t:r=>`WO <b>${escapeHtml(r.unitId)}</b> — ${escapeHtml(r.partName)} (${woStatus(r)})`});
+  add(state.fuelLogs.slice(-10).reverse(),'⛽','fuel',{d:r=>r.tanggal,t:r=>`Fuel <b>${escapeHtml(r.unitId)}</b> · keluar ${fmtInt(r.fuelOut)} Ltr`});
+  add(state.fuelStorageLogs.slice(-10).reverse(),'🛢️','fuel',{d:r=>r.tanggal,t:r=>`Pengiriman BBM ${fmtInt(r.fuelIn)} Ltr${r.supplier?' — '+escapeHtml(r.supplier):''}`});
+  it.sort((a,b)=>String(b.d).localeCompare(String(a.d)));
+  document.getElementById('tpFeed').innerHTML = it.slice(0,15).map(x=>`<div class="tp-feed-item" onclick="goPage('${x.pg}')"><span>${x.ic}</span><span>${x.txt}</span><span class="tp-d">${fmtDate(x.d)}</span></div>`).join('') || '<div style="color:var(--text-dim);font-size:12.5px;">Belum ada aktivitas input.</div>';
 }
 
 /* ================= CHATBOT (rule-based, offline) ================= */
